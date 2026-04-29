@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghostlog — I lost a $40k deal because I forgot to follow up</title>
+<meta name="description" content="A quiet daemon that watches my desktop and fills in my CRM, so I never lose context on a lead I actually care about. Built by a founder, for founders.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FFF8F0;
+    --paper-deep: #FCEFD7;
+    --ink: #1A1A1A;
+    --ink-soft: #4A4A4A;
+    --ink-faint: #8A8A8A;
+    --line: #E8DFCE;
+    --line-strong: #D6C9AE;
+    --orange: #DD6B20;
+    --orange-deep: #B5520A;
+    --highlight: #FEF08A;
+    --highlight-soft: #FEF7C3;
+    --green: #15803D;
+    --red: #B91C1C;
+    --max: 760px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif { font-family: 'Cormorant Garamond', Georgia, serif; }
+  .hand { font-family: 'Caveat', cursive; }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 28px; }
+  .wide { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  /* highlight marker */
+  .hl {
+    background: linear-gradient(180deg, transparent 60%, var(--highlight) 60%);
+    padding: 0 2px;
+  }
+  .hl-soft {
+    background: linear-gradient(180deg, transparent 60%, var(--highlight-soft) 60%);
+    padding: 0 2px;
+  }
+
+  /* ─── Top notice ─────────────── */
+  .topnotice {
+    background: var(--ink); color: var(--paper);
+    padding: 8px 0; text-align: center; font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+  .topnotice .hand {
+    color: var(--highlight); font-size: 20px; vertical-align: -2px;
+  }
+
+  /* ─── Header ─────────────────── */
+  header {
+    padding: 24px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .nav {
+    display: flex; justify-content: space-between; align-items: center;
+    max-width: 1080px; margin: 0 auto; padding: 0 28px;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 26px; font-weight: 600; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo::before {
+    content: '⌖'; color: var(--orange); font-size: 28px;
+    transform: translateY(-1px); display: inline-block;
+  }
+  .nav-meta { font-size: 14px; color: var(--ink-soft); display: flex; gap: 20px; align-items: center; }
+  .nav-meta a { color: var(--ink-soft); text-decoration: none; }
+  .nav-meta a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--orange); color: white !important;
+    padding: 8px 14px; border-radius: 6px;
+    font-weight: 500;
+  }
+
+  /* ─── Hero ───────────────────── */
+  .hero {
+    padding: 72px 0 64px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-grid {
+    max-width: 1080px; margin: 0 auto; padding: 0 28px;
+    display: grid; grid-template-columns: 280px 1fr;
+    gap: 56px; align-items: start;
+  }
+  .founder-photo {
+    width: 280px; height: 320px;
+    background: linear-gradient(135deg, var(--paper-deep) 0%, #F5E5C3 100%);
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 6px 6px 0 var(--paper-deep), 6px 6px 0 1px var(--line-strong);
+    display: grid; place-items: center;
+  }
+  .founder-photo svg {
+    width: 60%; height: auto; opacity: 0.5;
+  }
+  .placeholder-marker {
+    position: absolute; top: 8px; right: 8px;
+    background: var(--red); color: white;
+    font-size: 10px; padding: 2px 6px; border-radius: 3px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .photo-cap {
+    margin-top: 16px; font-family: 'Caveat', cursive;
+    font-size: 19px; color: var(--ink-soft); text-align: center;
+  }
+
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600; font-size: 60px; line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin-bottom: 28px;
+    max-width: 18ch;
+  }
+  h1 strong { font-weight: 700; }
+
+  .hero-body {
+    font-size: 19px; line-height: 1.7; color: var(--ink-soft);
+    margin-bottom: 32px; max-width: 56ch;
+  }
+  .hero-body p + p { margin-top: 16px; }
+  .signature {
+    font-family: 'Caveat', cursive; font-size: 28px;
+    color: var(--ink); margin-top: 8px;
+  }
+
+  .cta-row {
+    display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .btn-primary {
+    background: var(--orange); color: white;
+    padding: 16px 28px; border-radius: 8px;
+    font-weight: 600; font-size: 17px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    box-shadow: 0 4px 0 var(--orange-deep);
+    transition: transform 0.08s, box-shadow 0.08s;
+  }
+  .btn-primary:hover {
+    transform: translateY(2px); box-shadow: 0 2px 0 var(--orange-deep);
+  }
+  .btn-secondary {
+    color: var(--ink); text-decoration: underline;
+    text-decoration-color: var(--orange); text-decoration-thickness: 2px;
+    text-underline-offset: 4px; font-weight: 500;
+  }
+  .btn-secondary:hover { color: var(--orange); }
+  .micro-promise {
+    font-size: 14px; color: var(--ink-faint);
+    line-height: 1.5;
+  }
+  .micro-promise a { color: var(--orange); text-decoration: none; font-weight: 500; }
+
+  /* Trust strip */
+  .trust-strip {
+    margin-top: 48px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 28px; background: white;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .trust-item { font-size: 14px; color: var(--ink-soft); display: flex; align-items: center; gap: 8px; }
+  .trust-item strong { color: var(--ink); font-weight: 600; }
+  .stars { color: var(--orange); letter-spacing: 0.1em; }
+
+  /* ─── Section pattern ────────── */
+  section { padding: 80px 0; }
+  section + section { border-top: 1px solid var(--line); }
+  h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600; font-size: 44px; line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin-bottom: 28px;
+  }
+  .section p { font-size: 18px; line-height: 1.7; color: var(--ink-soft); margin-bottom: 18px; }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* ─── Why empty ──────────────── */
+  .why-empty p strong { color: var(--ink); font-weight: 600; }
+
+  /* ─── What it does ───────────── */
+  .what-does { background: var(--paper-deep); }
+  .annotated-mock {
+    margin-top: 40px;
+    background: white; border: 1px solid var(--line-strong);
+    border-radius: 8px; padding: 32px;
+    position: relative;
+  }
+  .mock-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 24px; align-items: stretch;
+    margin-bottom: 24px;
+  }
+  .mock-row:last-child { margin-bottom: 0; }
+  .mock-card {
+    border: 1px solid var(--line); border-radius: 6px;
+    padding: 18px; background: var(--paper);
+    font-size: 14px;
+  }
+  .mock-card .label {
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 10px; font-weight: 600;
+  }
+  .mock-card strong { color: var(--ink); }
+  .mock-card .row {
+    padding: 6px 0; border-top: 1px solid var(--line); color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+  .mock-card .row:first-of-type { border-top: none; }
+  .mock-card .row.new { color: var(--green); font-weight: 600; }
+  .mock-card .row.new::before { content: '✓ '; }
+  .scribble {
+    font-family: 'Caveat', cursive;
+    font-size: 22px; color: var(--orange-deep);
+    margin-top: 16px; line-height: 1.4;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .scribble .arrow { font-size: 32px; }
+
+  /* ─── AI features list ───────── */
+  .ai-features {
+    margin-top: 32px; list-style: none;
+  }
+  .ai-feat {
+    padding: 28px 0;
+    border-top: 1px dashed var(--line-strong);
+    display: grid; grid-template-columns: 56px 1fr;
+    gap: 24px; align-items: start;
+  }
+  .ai-feat:first-child { border-top: 2px solid var(--ink); padding-top: 32px; }
+  .ai-feat:last-child { border-bottom: 2px solid var(--ink); padding-bottom: 32px; }
+  .ai-feat-num {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 38px; font-weight: 600; color: var(--orange);
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .ai-feat h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px; font-weight: 600; letter-spacing: -0.01em;
+    margin-bottom: 8px; line-height: 1.25;
+  }
+  .ai-feat p {
+    color: var(--ink-soft); font-size: 17px; line-height: 1.6; margin: 0;
+  }
+  .ai-feat .scribble-side {
+    font-family: 'Caveat', cursive; font-size: 19px;
+    color: var(--orange-deep); margin-top: 10px;
+    padding-left: 16px; border-left: 2px solid var(--orange);
+    line-height: 1.4;
+  }
+
+  /* ─── Day-by-day ─────────────── */
+  .timeline { margin-top: 32px; }
+  .day {
+    display: grid; grid-template-columns: 100px 1fr;
+    gap: 32px; padding: 24px 0;
+    border-top: 1px dashed var(--line-strong);
+    align-items: start;
+  }
+  .day:first-child { border-top: 2px solid var(--ink); padding-top: 32px; }
+  .day:last-child { border-bottom: 2px solid var(--ink); padding-bottom: 32px; }
+  .day-num {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 36px; font-weight: 600; color: var(--orange);
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .day-num small { font-size: 14px; color: var(--ink-faint); display: block; margin-top: 4px; font-family: 'Inter', sans-serif; font-weight: 500; }
+  .day h3 { font-size: 20px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .day p { color: var(--ink-soft); margin: 0; font-size: 17px; }
+
+  /* ─── Comparison ─────────────── */
+  .comparison-table {
+    width: 100%; border-collapse: collapse;
+    background: white; border: 1px solid var(--line-strong);
+    border-radius: 8px; overflow: hidden;
+    margin-top: 32px;
+    font-size: 15px;
+  }
+  .comparison-table th, .comparison-table td {
+    padding: 16px 18px; text-align: left;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .comparison-table th:last-child, .comparison-table td:last-child { border-right: none; }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table thead {
+    background: var(--paper-deep);
+  }
+  .comparison-table th {
+    font-weight: 600; font-size: 14px;
+    color: var(--ink);
+  }
+  .comparison-table th.us { background: var(--orange); color: white; }
+  .comparison-table .yes { color: var(--green); font-weight: 600; }
+  .comparison-table .no { color: var(--ink-faint); }
+  .comparison-table .mid { color: var(--ink-soft); }
+
+  /* ─── For / Not For ──────────── */
+  .for-not-for { background: var(--paper-deep); }
+  .ffnf-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 32px; margin-top: 32px;
+  }
+  .ffnf-card {
+    background: white; border: 1px solid var(--line-strong);
+    border-radius: 8px; padding: 28px;
+  }
+  .ffnf-card h3 {
+    font-size: 17px; font-weight: 600; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+    letter-spacing: -0.005em;
+  }
+  .ffnf-card h3 .badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .ffnf-card.yes h3 .badge { background: var(--green); color: white; }
+  .ffnf-card.no h3 .badge { background: var(--red); color: white; }
+  .ffnf-card ul { list-style: none; }
+  .ffnf-card li {
+    padding: 10px 0; border-top: 1px solid var(--line);
+    font-size: 16px; color: var(--ink-soft); line-height: 1.5;
+    padding-left: 24px; position: relative;
+  }
+  .ffnf-card.yes li::before {
+    content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700;
+  }
+  .ffnf-card.no li::before {
+    content: '✕'; position: absolute; left: 0; color: var(--red); font-weight: 700;
+  }
+  .ffnf-card li:first-child { border-top: none; }
+
+  /* ─── Pricing ────────────────── */
+  .pricing-section { text-align: center; }
+  .pricing-card {
+    max-width: 460px; margin: 32px auto 0;
+    background: white; border: 2px solid var(--ink);
+    border-radius: 12px; padding: 40px 32px;
+    position: relative;
+    box-shadow: 8px 8px 0 var(--orange);
+  }
+  .founder-pricing-tag {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: var(--orange); color: white;
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .price-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 88px; font-weight: 600; line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .price-amount sup { font-size: 36px; vertical-align: super; font-weight: 500; color: var(--orange); }
+  .price-period { color: var(--ink-soft); font-size: 16px; margin-bottom: 28px; margin-top: 6px; }
+  .price-features {
+    list-style: none; text-align: left;
+    border-top: 1px solid var(--line); padding-top: 20px;
+    margin-bottom: 28px;
+  }
+  .price-features li {
+    padding: 8px 0; font-size: 16px; color: var(--ink-soft);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .price-features li::before {
+    content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0;
+  }
+  .pricing-card .btn-primary {
+    width: 100%; justify-content: center;
+  }
+  .pricing-card .micro-promise {
+    margin-top: 20px; font-size: 13px;
+  }
+  .price-counter {
+    font-family: 'Caveat', cursive; font-size: 22px;
+    color: var(--orange-deep); margin-top: 24px;
+  }
+
+  /* ─── Founder's promise ──────── */
+  .promise {
+    background: var(--paper-deep);
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    padding: 40px 48px;
+    margin-top: 32px;
+    position: relative;
+  }
+  .promise::before {
+    content: '"';
+    position: absolute; top: -6px; left: 24px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 120px; color: var(--orange); line-height: 1;
+  }
+  .promise p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; line-height: 1.5;
+    color: var(--ink); margin-bottom: 16px;
+    font-style: italic;
+  }
+  .promise-sig {
+    margin-top: 24px;
+    display: flex; align-items: center; gap: 16px;
+    border-top: 1px solid var(--line-strong); padding-top: 20px;
+  }
+  .promise-sig .scribble-name {
+    font-family: 'Caveat', cursive;
+    font-size: 36px; color: var(--ink); line-height: 1;
+  }
+  .promise-sig small { color: var(--ink-soft); font-size: 14px; display: block; margin-top: 2px; }
+
+  /* ─── FAQ ───────────────────── */
+  .faq details {
+    border-bottom: 1px solid var(--line);
+    padding: 22px 0;
+  }
+  .faq details:first-of-type { border-top: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    font-size: 19px; font-weight: 600; letter-spacing: -0.01em;
+    display: flex; justify-content: space-between; align-items: center;
+    color: var(--ink);
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '+'; font-weight: 400; font-size: 28px; color: var(--orange);
+    transition: transform 0.2s; line-height: 1;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details > p {
+    margin-top: 14px; color: var(--ink-soft); font-size: 17px; line-height: 1.65;
+  }
+
+  /* ─── Footer ─────────────────── */
+  footer {
+    padding: 56px 0 64px;
+    border-top: 1px solid var(--line);
+    background: var(--paper-deep);
+  }
+  .foot-grid {
+    max-width: 1080px; margin: 0 auto; padding: 0 28px;
+    display: grid; grid-template-columns: 2fr 1fr 1fr;
+    gap: 32px;
+  }
+  .foot-bio {
+    font-size: 15px; color: var(--ink-soft); line-height: 1.6;
+  }
+  .foot-bio strong { color: var(--ink); font-weight: 600; }
+  .foot-col h4 {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  .foot-col a {
+    display: block; color: var(--ink); text-decoration: none;
+    padding: 4px 0; font-size: 15px;
+  }
+  .foot-col a:hover { color: var(--orange); }
+  .foot-final {
+    max-width: 1080px; margin: 32px auto 0; padding: 24px 28px 0;
+    border-top: 1px solid var(--line); font-size: 13px; color: var(--ink-faint);
+    display: flex; justify-content: space-between;
+  }
+
+  /* Mobile */
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .founder-photo { width: 200px; height: 240px; margin: 0 auto; }
+    .photo-cap { text-align: center; }
+    h1 { font-size: 40px; }
+    h2 { font-size: 32px; }
+    .day { grid-template-columns: 60px 1fr; gap: 16px; }
+    .day-num { font-size: 28px; }
+    .ffnf-grid { grid-template-columns: 1fr; }
+    .ai-feat { grid-template-columns: 1fr; gap: 8px; }
+    .ai-feat-num { font-size: 28px; }
+    .mock-row { grid-template-columns: 1fr; }
+    .foot-grid { grid-template-columns: 1fr; }
+    .foot-final { flex-direction: column; gap: 8px; }
+    section { padding: 56px 0; }
+    .comparison-table { font-size: 13px; }
+    .comparison-table th, .comparison-table td { padding: 12px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topnotice">
+  <span class="hand">★</span> &nbsp; Lifetime founder pricing for the first 100 users — locked in forever.
+</div>
+
+<header>
+  <div class="nav">
+    <div class="logo">Ghostlog</div>
+    <div class="nav-meta">
+      <a href="#story">Story</a>
+      <a href="#what">What it does</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#install" class="nav-cta">Try it — $39/mo</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <div class="founder-photo">
+        <span class="placeholder-marker">SWAP PHOTO</span>
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="38" r="16" stroke="currentColor" stroke-width="2.5"/>
+          <path d="M20 90c0-16 14-26 30-26s30 10 30 26" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="photo-cap">— Mike, late at night, building this →</div>
+    </div>
+    <div>
+      <h1 class="serif">I lost a <span class="hl">$40k deal</span> because I forgot to follow up.</h1>
+      <div class="hero-body">
+        <p>I was juggling 8 conversations. Three were hot. I dropped one — they went with someone else.</p>
+        <p>Every CRM I tried felt like a second job. Type the email. Tag the deal. Drag the card. By the time I'd updated the record, I'd forgotten what we even talked about.</p>
+        <p>So I built <strong>Ghostlog</strong>: a quiet daemon that watches my desktop and fills in my CRM, so I never lose context on a lead I actually care about.</p>
+        <p class="signature">— Mike</p>
+      </div>
+      <div class="cta-row">
+        <a href="#install" class="btn-primary">
+          Try it for $39/mo
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <a href="#demo" class="btn-secondary">See it in 90 seconds →</a>
+      </div>
+      <div class="micro-promise">
+        No contracts. Cancel any time. Email me at <a href="mailto:mike@ghostlog.app">mike@ghostlog.app</a> if it doesn't work for you and I'll refund you the same day.
+      </div>
+
+      <div class="trust-strip">
+        <div class="trust-item"><span class="stars">★★★★★</span><strong>Beta users</strong></div>
+        <div class="trust-item"><strong>14</strong>founders using it daily</div>
+        <div class="trust-item"><strong>$39</strong>flat — no tiers</div>
+        <div class="trust-item"><strong>4 min</strong>install, no setup</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="story" class="why-empty">
+  <div class="wrap">
+    <h2 class="serif">Why your CRM is empty <em style="font-style: italic;">(and why it's not your fault)</em></h2>
+    <p>You've tried HubSpot Free. You've tried Notion. You've tried a Google Sheet with 12 columns and color coding. They all start clean. They all rot within a month.</p>
+    <p>It's not because you're undisciplined. It's because <strong>the act of logging is competing for the same brain you're using to actually sell</strong>. Every CRM update is a 30-second context switch from the work that makes the money. Multiplied by 40 touchpoints a week, that's two hours of context switching to maintain a record nobody is rewarding you for.</p>
+    <p>The honest answer is that <span class="hl-soft">CRMs were designed for sales managers who wanted to audit reps</span>. They were not designed for the founder who is also doing the selling.</p>
+  </div>
+</section>
+
+<section id="what" class="what-does">
+  <div class="wrap">
+    <h2 class="serif">What Ghostlog actually does.</h2>
+    <p>It runs in the background and watches the apps you're already using — Gmail, LinkedIn, Slack, Calendly, Zoom. When it sees a person who's in your CRM, it logs the interaction. That's it.</p>
+    <p>You never click anything. You never type anyone's name into the CRM. You just work, and the record fills itself in.</p>
+
+    <div class="annotated-mock">
+      <div class="mock-row">
+        <div class="mock-card">
+          <div class="label">What you do</div>
+          <div class="row">Reply to Jane's email at 11:42 AM</div>
+          <div class="row">Send a LinkedIn DM to Marcus at lunch</div>
+          <div class="row">Take a Zoom with Acme at 3 PM</div>
+        </div>
+        <div class="mock-card">
+          <div class="label">What Ghostlog does</div>
+          <div class="row new">Logs reply to Jane Chen · Acme deal</div>
+          <div class="row new">Logs DM to Marcus L · Stripe deal</div>
+          <div class="row new">Logs Zoom with Acme · adds transcript link</div>
+        </div>
+      </div>
+    </div>
+    <div class="scribble">
+      <span class="arrow">↑</span>
+      this is the magic part. you didn't open the CRM once.
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="serif">Oh — and the AI does <em>more</em> than just log stuff.</h2>
+    <p>Honest aside: I underplay this part because the auto-logging is the headline feature. But the rest is half the reason the whole thing works. Most CRMs are not AI-first. This one is — every part of it, not just a chat bubble bolted onto the side.</p>
+
+    <ul class="ai-features">
+      <li class="ai-feat">
+        <div class="ai-feat-num">01</div>
+        <div>
+          <h3>Lead scoring from <span class="hl">real signals</span>, not zip codes.</h3>
+          <p>Most CRMs score leads on demographics — company size, industry, title. That's a 2010 idea. Ghostlog scores on what actually predicts a close: response cadence, opens, mentions, similarity to past wins.</p>
+          <div class="scribble-side">jane@acme exchanged 14 msgs · opened last 3 emails → score: 8.4</div>
+        </div>
+      </li>
+      <li class="ai-feat">
+        <div class="ai-feat-num">02</div>
+        <div>
+          <h3>It drafts your follow-ups in your voice.</h3>
+          <p>Reads the actual conversation, drafts the next message. You skim and send. You don't write from scratch at 11pm anymore.</p>
+          <div class="scribble-side">"Marcus — quick re-prompt on the SSO question..." (you'd actually send this)</div>
+        </div>
+      </li>
+      <li class="ai-feat">
+        <div class="ai-feat-num">03</div>
+        <div>
+          <h3>Tells you which deals are about to stall — before they do.</h3>
+          <p>Pattern-matches against your past wins and losses. "Marcus's response time has doubled. 70% of deals like this stall here. Send him X." Catches the deal before it dies, not after.</p>
+          <div class="scribble-side">2 deals at risk this week · ranked by closeable-ness</div>
+        </div>
+      </li>
+      <li class="ai-feat">
+        <div class="ai-feat-num">04</div>
+        <div>
+          <h3>Ask it questions in plain English.</h3>
+          <p>"Which leads opened my email twice but haven't replied?" "Show me everyone I haven't followed up with from the conference." Real records, real answers. No SQL, no filter-builder, no segment-engineering.</p>
+          <div class="scribble-side">type the question → get the leads → email them</div>
+        </div>
+      </li>
+      <li class="ai-feat">
+        <div class="ai-feat-num">05</div>
+        <div>
+          <h3>Auto-enriches every new contact.</h3>
+          <p>Email lands. Ghostlog finds the company, the role, the LinkedIn, recent funding, recent press. Slots it in. You filled out zero forms.</p>
+          <div class="scribble-side">no more "let me update the contact card later" (you never do)</div>
+        </div>
+      </li>
+      <li class="ai-feat">
+        <div class="ai-feat-num">06</div>
+        <div>
+          <h3>3-line summary on every contact.</h3>
+          <p>Open Jane's record. Read: "Met at Saastr in March, asked about pricing twice, has a Q3 deadline." That's the whole relationship in one breath. No re-reading 40 emails before a call.</p>
+          <div class="scribble-side">this is the feature people don't know they need until they have it</div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="serif">What happens after you install it.</h2>
+    <div class="timeline">
+      <div class="day">
+        <div class="day-num">01<small>Day</small></div>
+        <div>
+          <h3>You install it. You forget you installed it.</h3>
+          <p>4-minute setup. Grant screen-recording permission. Done. You go back to working on whatever you were working on. The app makes no notifications. No badge counters. No inbox to check.</p>
+        </div>
+      </div>
+      <div class="day">
+        <div class="day-num">03<small>Day</small></div>
+        <div>
+          <h3>You open LeadSpot for the first time and stare.</h3>
+          <p>Every contact has activity. The activity is accurate. The activity is dated correctly. You did not type any of it. You spend 20 minutes scrolling through your own pipeline like you're reading someone else's diary.</p>
+        </div>
+      </div>
+      <div class="day">
+        <div class="day-num">07<small>Day</small></div>
+        <div>
+          <h3>The morning digest catches a lead you'd forgotten about.</h3>
+          <p>"You exchanged 4 messages with Marcus L last week. No reply for 6 days. He opened your last email twice." You send him a 2-line follow-up. He responds in an hour. The deal moves.</p>
+        </div>
+      </div>
+      <div class="day">
+        <div class="day-num">30<small>Day</small></div>
+        <div>
+          <h3>You realize you haven't manually logged a single thing in a month.</h3>
+          <p>You closed 2 deals you would've forgotten. You spent zero hours on CRM admin. You consider whether to tell other founders about Ghostlog or keep it as your secret weapon.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="background: var(--paper-deep);">
+  <div class="wrap">
+    <h2 class="serif">An honest comparison.</h2>
+    <p>I'm not going to pretend Ghostlog is for everyone. Here's the honest version:</p>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Spreadsheet</th>
+          <th>HubSpot Free</th>
+          <th>Gong</th>
+          <th class="us">Ghostlog</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Cost</strong></td>
+          <td class="yes">$0</td>
+          <td class="yes">$0</td>
+          <td class="no">$1.6k/seat/yr</td>
+          <td class="yes">$39/mo</td>
+        </tr>
+        <tr>
+          <td><strong>You have to update it manually</strong></td>
+          <td class="no">Always</td>
+          <td class="no">Always</td>
+          <td class="mid">Mostly</td>
+          <td class="yes">Never</td>
+        </tr>
+        <tr>
+          <td><strong>Watches your whole desktop</strong></td>
+          <td class="no">No</td>
+          <td class="no">No</td>
+          <td class="mid">Calls only</td>
+          <td class="yes">Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Privacy: data stays on your machine</strong></td>
+          <td class="yes">Yes</td>
+          <td class="no">No</td>
+          <td class="no">No</td>
+          <td class="yes">Yes (raw OCR)</td>
+        </tr>
+        <tr>
+          <td><strong>Built for solo founders</strong></td>
+          <td class="mid">Sort of</td>
+          <td class="no">Built for teams</td>
+          <td class="no">Built for enterprise</td>
+          <td class="yes">Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Setup time</strong></td>
+          <td class="yes">5 min</td>
+          <td class="mid">2 hours</td>
+          <td class="no">6 weeks</td>
+          <td class="yes">4 minutes</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin-top: 24px; font-size: 16px;"><strong>The honest take:</strong> Gong is better if you have a real sales team and run 30 calls a week. We're not for that. HubSpot is fine if you have an admin who'll keep it clean. We're not for that either. <span class="hl">If it's just you, doing the selling, between everything else you're already doing</span> — Ghostlog is for that.</p>
+  </div>
+</section>
+
+<section id="for-not" class="for-not-for">
+  <div class="wrap">
+    <h2 class="serif">Who this is for. Who it isn't.</h2>
+    <p>I'd rather you don't buy this than buy it and want a refund. Here's the filter:</p>
+    <div class="ffnf-grid">
+      <div class="ffnf-card yes">
+        <h3><span class="badge">For you</span></h3>
+        <ul>
+          <li>You're the founder, and you do most of the selling</li>
+          <li>You run deals across email, LinkedIn, Slack, and Zoom — not all in one tool</li>
+          <li>You've lost a deal because you forgot to follow up (or you're worried you will)</li>
+          <li>You make $10k–$80k MRR and can't justify Gong or hire a CRM admin</li>
+          <li>You'd rather pay $39/mo than spend 2 hours a week on CRM admin</li>
+        </ul>
+      </div>
+      <div class="ffnf-card no">
+        <h3><span class="badge">Not for you</span></h3>
+        <ul>
+          <li>You have a sales team of 5+ reps you want to audit</li>
+          <li>You run all your sales through cold email automation tools</li>
+          <li>You're regulated and can't have any screen-capture daemon installed</li>
+          <li>You already have a CRM admin and like updating Salesforce by hand</li>
+          <li>You want every feature configurable — Ghostlog has fewer knobs on purpose</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="pricing-section">
+  <div class="wrap">
+    <h2 class="serif" style="text-align: center;">One price. No catch.</h2>
+    <p style="text-align: center;">First 100 users lock in $39/mo for life — even when I raise the price later.</p>
+    <div class="pricing-card">
+      <div class="founder-pricing-tag">Founder pricing · 100 spots</div>
+      <div class="price-amount"><sup>$</sup>39</div>
+      <div class="price-period">per month · cancel anytime</div>
+      <ul class="price-features">
+        <li>Auto-logged activities across Gmail, LinkedIn, Slack, Calendly, Zoom</li>
+        <li>"Leads gone quiet" morning digest</li>
+        <li>LeadSpot CRM included (full app, not a stripped-down version)</li>
+        <li>Local-first capture — your screen never leaves your Mac</li>
+        <li>Email support from me, the founder, same-day reply</li>
+        <li>Every future feature for the lifetime of your account</li>
+      </ul>
+      <a href="#install" class="btn-primary">Try it for $39/mo</a>
+      <div class="micro-promise">14-day refund, no questions. Email me, I refund the same day.</div>
+    </div>
+    <div class="price-counter">14 of 100 founder spots taken →</div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2 class="serif">My promise to you.</h2>
+    <div class="promise">
+      <p>If you install Ghostlog and you don't feel — within 30 days — that your CRM is filling itself in and you're closing more of the deals you forgot about, email me. I'll refund every dollar. No questions. No "let me hop on a call to understand why" exit interview.</p>
+      <p>I won't sell your data, ever. Your screen capture stays on your machine. The cloud only ever sees redacted summaries. If I ever change that, I'll tell you first and let you walk away with all your data.</p>
+      <p>I will read every email you send me. I will reply to most within 24 hours. If I can't fix your problem, I'll tell you that honestly.</p>
+      <div class="promise-sig">
+        <div>
+          <div class="scribble-name">Mike</div>
+          <small>Founder · Ghostlog · mike@ghostlog.app</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2 class="serif" style="text-align: center;">FAQ</h2>
+    <div class="faq" style="margin-top: 32px;">
+      <details>
+        <summary>I'm worried about a daemon watching my screen all day. Talk me out of it.</summary>
+        <p>I'm worried about it too — that's why the architecture is what it is. Screen capture is processed entirely on your Mac. Screenshots are encrypted with a key in your Keychain and never leave the machine. The cloud only receives short summaries like "exchanged email with jane@acme.com at 11:42." Banking apps, password managers, and health portals are muted at the OS level and can't be enabled. You can mute any app at any time. There's a local audit log so you can see exactly what was sent.</p>
+      </details>
+      <details>
+        <summary>Why $39 and not $20 or $99?</summary>
+        <p>$20 is unsustainable — I'd burn out and shut it down within 18 months. $99 is more than the value most solo founders feel they get from a CRM. $39 is the price I think is fair for a year-one bet, and it's locked in for life if you're in the first 100. When v2 ships and ARR justifies it, list price will probably be $79.</p>
+      </details>
+      <details>
+        <summary>Does it work without LeadSpot?</summary>
+        <p>Right now, no. LeadSpot is included in the price. If enough people ask for HubSpot or Attio integration, I'll build it — but I'm not going to ship a half-baked integration just to claim "it works with everything."</p>
+      </details>
+      <details>
+        <summary>Is this just Gong for cheaper?</summary>
+        <p>No. Gong watches calls. Ghostlog watches the entire desktop — emails, DMs, calendar, calls, anything. Gong assumes you have a sales team. Ghostlog assumes you don't.</p>
+      </details>
+      <details>
+        <summary>What other AI stuff does this thing actually do?</summary>
+        <p>Glad you asked — this is honestly the part I underplay because auto-logging is the loud feature. The rest:</p>
+        <p>• <strong>Scores leads from real signals.</strong> Not "this person works at a 100-person company so they're a 7." More like — you've exchanged 14 messages, they opened your last 3 emails, similar profiles close in 21 days. That's a real score.</p>
+        <p>• <strong>Drafts your follow-up emails.</strong> Reads the actual past conversation and writes the next message in your voice. You edit, you don't start from scratch.</p>
+        <p>• <strong>Catches deals about to stall.</strong> Pattern-matches against your past wins and losses. "Marcus's response time doubled — 70% of deals like this stall here."</p>
+        <p>• <strong>Plain-English questions.</strong> "Which leads went quiet last week?" gets you the actual records, ranked.</p>
+        <p>• <strong>Auto-enriches contacts.</strong> Pulls company, role, LinkedIn, recent press the moment a contact appears. You fill out zero forms.</p>
+        <p>• <strong>3-line summary per contact.</strong> Reads everything, gives you the relationship in one breath.</p>
+      </details>
+      <details>
+        <summary>Why pay for this when HubSpot Free exists?</summary>
+        <p>Real answer: HubSpot Free is a fine database. Ghostlog is a CRM that fills itself in and tells you what to do. Open your HubSpot Free right now. Is it accurate? Is it current? If yes — keep using it, no joke. If it's 70% empty and stale (which is the case for almost every solo founder I've shown), that's the gap Ghostlog closes. Plus HubSpot Free isn't AI-first — it has AI tacked on. Ghostlog is built around AI from the foundation up.</p>
+      </details>
+      <details>
+        <summary>Can I bring my contacts from HubSpot or Pipedrive?</summary>
+        <p>Yep. CSV import for everything. Direct importers for HubSpot, Pipedrive, Attio, and Folk that bring contacts, companies, deals, and history. I personally answer migration questions if anything goes weird — most people finish in about 10 minutes. The AI auto-enriches everything on import so you don't open day one to a wall of empty fields.</p>
+      </details>
+      <details>
+        <summary>Windows? Linux?</summary>
+        <p>Mac only for now. Windows is on the roadmap if there's demand. Linux probably never.</p>
+      </details>
+      <details>
+        <summary>Can I just see a demo before paying?</summary>
+        <p>Yes — there's a 90-second demo video on this page (link above). If you want a live walkthrough, email me and I'll do one. I do them myself; there's no "AE" to schedule a follow-up with.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div class="foot-bio">
+      <strong>Ghostlog</strong> is built by Mike, a founder who's tired of CRMs that don't fill themselves in.
+      <br><br>
+      I work on this in the open. Follow along on <a href="#" style="color: var(--orange);">@mike</a> if you want updates without the marketing.
+      <br><br>
+      <em>Made in Colorado · Quiet on purpose.</em>
+    </div>
+    <div class="foot-col">
+      <h4>Product</h4>
+      <a href="#what">What it does</a>
+      <a href="#story">Why I built it</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="foot-col">
+      <h4>Honest stuff</h4>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Refund policy</a>
+      <a href="mailto:mike@ghostlog.app">Email Mike</a>
+    </div>
+  </div>
+  <div class="foot-final">
+    <span>© 2026 Ghostlog · Built by one person who replies to email.</span>
+    <span><span class="hand" style="color: var(--orange); font-size: 18px;">★</span> If you got this far, you'd probably love the product. <a href="#install" style="color: var(--orange);">Try it.</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

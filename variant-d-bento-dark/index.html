@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghostlog — The CRM that knows what you know</title>
+<meta name="description" content="The AI-native CRM for founder-led sales. Auto-logged activity, AI-drafted follow-ups, plain-English queries, stall detection — a CRM that updates itself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B0F1A;
+    --bg-soft: #0E1320;
+    --surface: #141A2A;
+    --surface-hi: #1B2235;
+    --line: #232A3D;
+    --line-hi: #2C354B;
+    --text: #F5F5F7;
+    --text-mid: #A8B0C2;
+    --text-dim: #6B7588;
+    --amber: #FBBF24;
+    --amber-soft: rgba(251,191,36,0.12);
+    --amber-deep: #B45309;
+    --green: #34D399;
+    --red: #F87171;
+    --max: 1200px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 30% -10%, rgba(251,191,36,0.06), transparent 50%),
+      radial-gradient(ellipse at 70% 110%, rgba(99,102,241,0.05), transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--line);
+    background: rgba(11,15,26,0.7);
+    backdrop-filter: blur(12px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0;
+  }
+  .logo {
+    font-weight: 700; font-size: 18px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, var(--amber), #F59E0B);
+    border-radius: 7px;
+    box-shadow: 0 2px 8px rgba(251,191,36,0.4);
+    position: relative;
+  }
+  .logo-mark::after {
+    content: ''; position: absolute; inset: 6px;
+    background: var(--bg); border-radius: 2px;
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    color: var(--text-mid); text-decoration: none; font-size: 14px; font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--text); color: var(--bg) !important;
+    padding: 8px 14px; border-radius: 8px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 80px 0 48px;
+    text-align: center;
+    position: relative;
+  }
+  .badge-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 100px;
+    background: var(--amber-soft);
+    border: 1px solid rgba(251,191,36,0.2);
+    color: var(--amber);
+    font-size: 13px; font-weight: 500;
+    margin-bottom: 28px;
+  }
+  .badge-pill::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--amber); box-shadow: 0 0 8px var(--amber);
+  }
+  h1 {
+    font-size: 80px; line-height: 1.02; letter-spacing: -0.04em;
+    font-weight: 700; max-width: 14ch;
+    margin: 0 auto 24px;
+    background: linear-gradient(180deg, var(--text) 0%, #94A3B8 130%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .lede {
+    font-size: 20px; line-height: 1.55; color: var(--text-mid);
+    max-width: 60ch; margin: 0 auto 40px;
+  }
+  .cta-row {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--text); color: var(--bg);
+    padding: 14px 22px; border-radius: 10px;
+    font-weight: 600; font-size: 15px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.1s ease;
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface); color: var(--text);
+    padding: 14px 22px; border-radius: 10px;
+    font-weight: 500; font-size: 15px; text-decoration: none;
+    border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { background: var(--surface-hi); border-color: var(--line-hi); }
+
+  /* Trust strip */
+  .trust {
+    display: flex; gap: 32px; justify-content: center; align-items: center;
+    margin-top: 56px;
+    color: var(--text-dim); font-size: 13px;
+    flex-wrap: wrap;
+  }
+  .trust-dot { width: 4px; height: 4px; background: var(--text-dim); border-radius: 50%; }
+
+  /* Bento grid */
+  .bento-section {
+    padding: 64px 0 96px;
+  }
+  .section-eyebrow {
+    text-align: center;
+    font-size: 13px; color: var(--amber); letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    text-align: center;
+    font-size: 48px; line-height: 1.08; letter-spacing: -0.025em;
+    font-weight: 700; max-width: 22ch;
+    margin: 0 auto 16px;
+  }
+  .section-lede {
+    text-align: center;
+    font-size: 18px; color: var(--text-mid);
+    max-width: 60ch; margin: 0 auto 56px;
+  }
+
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: minmax(220px, auto);
+    gap: 16px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .tile:hover {
+    border-color: var(--line-hi);
+    transform: translateY(-2px);
+  }
+  .tile-label {
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--amber); font-weight: 600;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tile-label svg { width: 14px; height: 14px; }
+  .tile h3 {
+    font-size: 22px; line-height: 1.2; letter-spacing: -0.015em;
+    font-weight: 600; margin-bottom: 10px;
+  }
+  .tile p {
+    font-size: 14px; color: var(--text-mid); line-height: 1.55;
+  }
+  .tile-demo {
+    margin-top: auto; padding-top: 20px;
+  }
+
+  /* Tile sizes */
+  .col-2 { grid-column: span 2; }
+  .col-3 { grid-column: span 3; }
+  .col-4 { grid-column: span 4; }
+  .row-2 { grid-row: span 2; }
+
+  /* Specific tile decorations */
+  .hero-tile {
+    background:
+      radial-gradient(ellipse at 80% 20%, rgba(251,191,36,0.10), transparent 50%),
+      var(--surface);
+  }
+  .hero-tile h3 {
+    font-size: 32px; line-height: 1.1; letter-spacing: -0.02em;
+    max-width: 16ch;
+  }
+  .hero-tile p {
+    font-size: 16px; max-width: 36ch;
+  }
+
+  /* Auto-log animated demo */
+  .autolog-demo {
+    margin-top: 24px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; line-height: 1.7;
+  }
+  .autolog-line { display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
+  .autolog-line .ts { color: var(--text-dim); width: 56px; flex-shrink: 0; }
+  .autolog-line .src { color: var(--amber); width: 64px; flex-shrink: 0; }
+  .autolog-line .out { color: var(--text); }
+  .autolog-line.added { color: var(--green); }
+  .autolog-line.added::before { content: '→'; color: var(--green); }
+
+  /* NL query tile */
+  .nlq-input {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nlq-input::before {
+    content: '>'; color: var(--amber); font-weight: 700;
+  }
+  .nlq-result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .nlq-result-row:first-of-type { border-top: none; }
+  .nlq-result-row .name { color: var(--text); font-weight: 500; }
+  .nlq-result-row .meta { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* Score tile */
+  .score-bar {
+    margin-top: 14px;
+    height: 6px; background: var(--bg-soft); border-radius: 3px;
+    overflow: hidden;
+  }
+  .score-bar > div {
+    height: 100%; width: 84%;
+    background: linear-gradient(90deg, var(--amber), #F59E0B);
+    border-radius: 3px;
+  }
+  .score-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 48px; font-weight: 600;
+    background: linear-gradient(180deg, var(--amber), #F59E0B);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; margin-top: 16px;
+  }
+  .score-num small {
+    font-size: 16px; color: var(--text-dim); -webkit-text-fill-color: var(--text-dim);
+    margin-left: 4px;
+  }
+
+  /* Drafts tile */
+  .draft-bubble {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 13px;
+    color: var(--text-mid);
+    line-height: 1.5;
+    margin-top: 16px;
+    position: relative;
+  }
+  .draft-bubble::before {
+    content: 'AI DRAFT'; position: absolute; top: -8px; left: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    background: var(--surface); padding: 0 6px;
+    color: var(--amber); letter-spacing: 0.1em;
+  }
+
+  /* Stall tile */
+  .stall-list {
+    margin-top: 16px;
+  }
+  .stall-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .stall-row:first-of-type { border-top: none; }
+  .stall-row .left { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .stall-row .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 8px rgba(248,113,113,0.5);
+  }
+  .stall-row .dot.warn { background: var(--amber); box-shadow: 0 0 8px rgba(251,191,36,0.5); }
+  .stall-row .right { color: var(--text-dim); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  /* Enrich tile */
+  .enrich-card {
+    margin-top: 16px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .enrich-card .name { font-weight: 600; font-size: 14px; }
+  .enrich-card .role { font-size: 12px; color: var(--text-mid); margin-top: 2px; }
+  .enrich-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .enrich-pill {
+    font-size: 11px; padding: 3px 8px;
+    background: var(--surface-hi); color: var(--text-mid);
+    border-radius: 4px; font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Summary tile */
+  .summary-quote {
+    margin-top: 16px;
+    border-left: 2px solid var(--amber);
+    padding-left: 14px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Privacy tile */
+  .privacy-tile {
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(52,211,153,0.10), transparent 60%),
+      var(--surface);
+  }
+  .privacy-shield {
+    width: 48px; height: 48px;
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.3);
+    border-radius: 12px;
+    display: grid; place-items: center;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .privacy-tile h3 { color: var(--green); }
+
+  /* Comparison strip */
+  .compare-strip {
+    margin-top: 96px;
+    border: 1px solid var(--line); border-radius: 16px;
+    padding: 40px;
+    background: var(--surface);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .compare-cell h4 {
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 600; margin-bottom: 12px;
+  }
+  .compare-cell p { font-size: 15px; color: var(--text-mid); line-height: 1.5; }
+  .compare-cell.us h4 { color: var(--amber); }
+  .compare-cell.us p { color: var(--text); font-weight: 500; }
+
+  /* Pricing */
+  .pricing-section {
+    padding: 96px 0;
+    text-align: center;
+  }
+  .pricing-card {
+    max-width: 480px; margin: 32px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pricing-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.08), transparent 60%);
+    pointer-events: none;
+  }
+  .pricing-card > * { position: relative; z-index: 1; }
+  .price-amount {
+    font-size: 72px; font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .price-amount sup { font-size: 32px; vertical-align: super; color: var(--text-dim); font-weight: 500; }
+  .price-period { color: var(--text-mid); font-size: 16px; margin: 6px 0 28px; }
+  .price-features {
+    list-style: none; text-align: left;
+    border-top: 1px solid var(--line); padding-top: 24px;
+    margin-bottom: 28px;
+  }
+  .price-features li {
+    padding: 8px 0; font-size: 15px; color: var(--text-mid);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .price-features li::before {
+    content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0;
+  }
+  .pricing-card .btn-primary { width: 100%; justify-content: center; }
+
+  /* FAQ */
+  .faq-section { padding: 96px 0; }
+  .faq { max-width: 760px; margin: 32px auto 0; }
+  .faq details {
+    border-top: 1px solid var(--line);
+    padding: 24px 0;
+  }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    font-size: 17px; font-weight: 500; color: var(--text);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '+'; font-weight: 400; font-size: 24px; color: var(--amber);
+    transition: transform 0.2s;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details > p {
+    margin-top: 14px; color: var(--text-mid); font-size: 15px; line-height: 1.7;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 0;
+    color: var(--text-dim);
+    font-size: 13px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer a { color: var(--text-mid); text-decoration: none; margin-left: 24px; }
+  footer a:hover { color: var(--text); }
+
+  /* Mobile */
+  @media (max-width: 1024px) {
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .col-2, .col-3, .col-4 { grid-column: span 2; }
+    .row-2 { grid-row: auto; }
+    .compare-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 20px; }
+    h1 { font-size: 48px; }
+    .section-title { font-size: 32px; }
+    .lede { font-size: 17px; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    .bento { grid-template-columns: 1fr; }
+    .col-2, .col-3, .col-4 { grid-column: span 1; }
+    .compare-strip { grid-template-columns: 1fr; padding: 24px; }
+    footer { flex-direction: column; gap: 16px; }
+    footer a { margin: 0 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="logo-mark"></span>
+      Ghostlog
+    </div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#compare">Compare</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#install" class="nav-cta">Install for Mac</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="badge-pill">AI-native CRM · For founder-led sales</span>
+    <h1>The CRM that knows what you know.</h1>
+    <p class="lede">
+      Auto-logged activity. AI-drafted follow-ups. Plain-English pipeline queries.
+      Stall detection. Auto-enrichment. A CRM that updates itself, scores itself,
+      and tells you what to do next — instead of the other way around.
+    </p>
+    <div class="cta-row">
+      <a href="#install" class="btn-primary">
+        Install for Mac
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#features" class="btn-secondary">Tour the AI features</a>
+    </div>
+
+    <div class="trust">
+      <span><span style="color: var(--text);">$39/mo</span> · cancel anytime</span>
+      <span class="trust-dot"></span>
+      <span>Local-first capture</span>
+      <span class="trust-dot"></span>
+      <span>Mac · 4-min install</span>
+      <span class="trust-dot"></span>
+      <span>Built for solo founders</span>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="bento-section">
+  <div class="wrap">
+    <div class="section-eyebrow">An AI-first CRM, end-to-end</div>
+    <h2 class="section-title">Most CRMs bolt AI onto a database. Ghostlog is built around it.</h2>
+    <p class="section-lede">
+      Eight capabilities. Each one closes a gap that turns most CRMs into shelfware.
+      None of them are chatbots in a sidebar.
+    </p>
+
+    <div class="bento">
+      <!-- Hero tile: Auto-logging (large) -->
+      <div class="tile hero-tile col-3 row-2">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="2" fill="currentColor"/><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          Always on
+        </div>
+        <h3>Your activity log writes itself.</h3>
+        <p>The Ghostlog daemon watches Gmail, LinkedIn, Slack, Calendly, and Zoom.
+        Anyone you talk to who's in your CRM gets logged automatically — every reply,
+        every DM, every meeting. You never type anyone's name into a contact card again.</p>
+        <div class="autolog-demo">
+          <div class="autolog-line"><span class="ts">11:42</span><span class="src">Gmail</span><span class="out">jane@acme.com replied to "Q3 pricing"</span></div>
+          <div class="autolog-line added"><span class="ts">11:42</span><span class="src">LeadSpot</span><span class="out">activity logged → Acme deal</span></div>
+          <div class="autolog-line"><span class="ts">12:08</span><span class="src">LinkedIn</span><span class="out">DM exchange with marcus@stripe</span></div>
+          <div class="autolog-line added"><span class="ts">12:08</span><span class="src">LeadSpot</span><span class="out">activity logged → Stripe deal</span></div>
+          <div class="autolog-line"><span class="ts">14:22</span><span class="src">Zoom</span><span class="out">Acme Q3 review · 32 min</span></div>
+          <div class="autolog-line added"><span class="ts">14:22</span><span class="src">LeadSpot</span><span class="out">call + transcript link → Acme deal</span></div>
+        </div>
+      </div>
+
+      <!-- Lead scoring -->
+      <div class="tile col-3">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 11V7m4 4V3m4 8V5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Real-signal scoring
+        </div>
+        <h3>Lead scoring grounded in your actual activity.</h3>
+        <p>Not "this person works at a 50-person SaaS so they're a 7." Real signals: response cadence, opens, mentions, similarity to your past closed deals.</p>
+        <div class="score-num">8.4<small>/10</small></div>
+        <div class="score-bar"><div></div></div>
+      </div>
+
+      <!-- NL queries -->
+      <div class="tile col-3">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.4"/><path d="m9 9 3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Plain English
+        </div>
+        <h3>Ask your pipeline anything.</h3>
+        <p>No filter builders. No SQL. Type the question, get the records.</p>
+        <div class="nlq-input">which leads opened my email twice but didn't reply?</div>
+        <div class="nlq-result-row"><span class="name">Jane Chen</span><span class="meta">Acme · opened 4× · 6d ago</span></div>
+        <div class="nlq-result-row"><span class="name">Marcus L.</span><span class="meta">Stripe · opened 3× · 4d ago</span></div>
+        <div class="nlq-result-row"><span class="name">Aisha K.</span><span class="meta">Linear · opened 2× · 9d ago</span></div>
+      </div>
+
+      <!-- AI drafts -->
+      <div class="tile col-2">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Drafted in your voice
+        </div>
+        <h3>Reply suggestions, grounded.</h3>
+        <p>The AI reads the actual conversation and drafts the next message in your voice. You skim, edit, send.</p>
+        <div class="draft-bubble">
+          Hey Marcus — quick re-prompt on the SSO question. We can lock founder pricing for Y2 if we close before EOQ. Worth a 15-min sync this week?
+        </div>
+      </div>
+
+      <!-- Stall detection -->
+      <div class="tile col-2">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v8m0 3v.5M1 7a6 6 0 1 1 12 0 6 6 0 0 1-12 0Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Pre-stall detection
+        </div>
+        <h3>Catches deals before they die.</h3>
+        <p>Pattern matches your past wins/losses. Tells you which deals are about to slip.</p>
+        <div class="stall-list">
+          <div class="stall-row"><div class="left"><span class="dot"></span>Marcus L. · Stripe</div><div class="right">stalls in ~3d</div></div>
+          <div class="stall-row"><div class="left"><span class="dot warn"></span>Aisha K. · Linear</div><div class="right">stalls in ~7d</div></div>
+        </div>
+      </div>
+
+      <!-- Auto-enrichment -->
+      <div class="tile col-2">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M7 1v6m0 0 3-3m-3 3-3-3M2 11v1h10v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          On contact-create
+        </div>
+        <h3>Auto-enrichment with zero forms.</h3>
+        <p>New email lands → AI fills in role, company, LinkedIn, recent press.</p>
+        <div class="enrich-card">
+          <div class="name">Jane Chen</div>
+          <div class="role">VP of Sales · Acme Corp</div>
+          <div class="enrich-pills">
+            <span class="enrich-pill">acme.com</span>
+            <span class="enrich-pill">linkedin.com/in/janechen</span>
+            <span class="enrich-pill">$12M Series A · Mar '26</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-line summary -->
+      <div class="tile col-3">
+        <div class="tile-label">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 4h10M2 7h10M2 10h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Continuous summarization
+        </div>
+        <h3>Every contact summarized in 3 lines.</h3>
+        <p>The whole relationship in one breath — no re-reading 40 emails before a call.</p>
+        <div class="summary-quote">
+          "Met at SaaStr, asked about SSO + pricing, has a hard Q3 deadline driven by their security team. Last touch: 6 days ago, 2 unanswered."
+        </div>
+      </div>
+
+      <!-- Privacy tile -->
+      <div class="tile col-3 privacy-tile">
+        <div class="privacy-shield">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2 3 5v6c0 4.5 3 7.5 8 9 5-1.5 8-4.5 8-9V5l-8-3Z" stroke="currentColor" stroke-width="1.6"/><path d="m8 11 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Your screen never leaves your machine.</h3>
+        <p>Screen capture is processed locally and encrypted with macOS Keychain. Only redacted, allowlist-passing observations are sent to the cloud — and you can audit every byte. Banking, password managers, and health portals are muted at the OS level.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="compare" class="wrap">
+  <div class="compare-strip">
+    <div class="compare-cell">
+      <h4>HubSpot Free</h4>
+      <p>A database you have to fill in. Empty within a month for most solo founders. AI features are an add-on.</p>
+    </div>
+    <div class="compare-cell">
+      <h4>Pipedrive</h4>
+      <p>Better UI than HubSpot, still requires you to update everything. Built around manual data entry.</p>
+    </div>
+    <div class="compare-cell">
+      <h4>Gong</h4>
+      <p>Watches sales calls, $1.6k/seat/yr plus platform fees. Built for sales teams of 50+, not solo founders.</p>
+    </div>
+    <div class="compare-cell us">
+      <h4>Ghostlog</h4>
+      <p>Auto-fills itself from your whole desktop. AI scoring, drafts, queries, stall detection. $39/mo, 4-min install.</p>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="pricing-section">
+  <div class="wrap">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">One price. Every feature. No tiers.</h2>
+    <div class="pricing-card">
+      <span class="badge-pill">Solo plan</span>
+      <div class="price-amount" style="margin-top: 24px;"><sup>$</sup>39</div>
+      <div class="price-period">per month · cancel anytime</div>
+      <ul class="price-features">
+        <li>Auto-logged activity (Gmail, LinkedIn, Slack, Calendly, Zoom)</li>
+        <li>AI lead scoring + stall detection</li>
+        <li>AI-drafted follow-ups in your voice</li>
+        <li>Plain-English pipeline queries</li>
+        <li>Auto-enrichment + 3-line contact summaries</li>
+        <li>Local-first encrypted screen capture</li>
+        <li>LeadSpot CRM included · email support from the founder</li>
+      </ul>
+      <a href="#install" class="btn-primary">Install for Mac</a>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="faq-section">
+  <div class="wrap">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">Honest answers.</h2>
+    <div class="faq">
+      <details>
+        <summary>Is the AI just a chat panel bolted onto a regular CRM?</summary>
+        <p>No — that's the whole pitch. Most "AI CRMs" are HubSpot with a chat sidebar. Ghostlog is built around the AI: auto-logging is AI, scoring is AI-grounded, drafts are AI, summaries are AI, queries are AI, enrichment is AI, stall detection is AI. The CRM is the substrate; the AI is the product.</p>
+      </details>
+      <details>
+        <summary>What model powers the AI features?</summary>
+        <p>A mix. Local Haiku-class models run on your Mac for screen analysis and entity extraction (privacy-preserving). Frontier models (Claude Sonnet / GPT-4-class) run in the cloud only for content you've explicitly shared — drafts, summaries, queries. We swap models as better ones ship; you don't have to think about it.</p>
+      </details>
+      <details>
+        <summary>Does the AI watch literally everything on my screen?</summary>
+        <p>No. It watches the apps and domains on your allowlist (Gmail, LinkedIn, Slack, Calendly, Zoom by default). Banking, password managers, and health portals are muted at the OS level and can't be enabled. You can mute any app any time. The audit log is local — you can grep what was sent to the cloud and delete entries.</p>
+      </details>
+      <details>
+        <summary>Can I import contacts from HubSpot, Pipedrive, or Attio?</summary>
+        <p>Yes. CSV import works out of the box. Direct importers for HubSpot, Pipedrive, Attio, and Folk pull contacts, companies, deals, and historical activity. The AI auto-enriches everything on import so you're not staring at empty fields on day one. Most users finish migration in under 10 minutes.</p>
+      </details>
+      <details>
+        <summary>How does this compare to Gong or Clari?</summary>
+        <p>Gong and Clari are sales-team tools priced for revenue orgs of 20–50+ reps ($1.6k/seat/yr plus five-figure platform fees, six-week deployment). They watch calls. Ghostlog is built for the founder doing the selling, watches the entire desktop, costs $39/mo, and installs in 4 minutes. Different tools for different stages of company.</p>
+      </details>
+      <details>
+        <summary>Will it work without internet?</summary>
+        <p>Capture and entity matching keep running offline. Cloud features (AI drafts, queries that hit the embedding index, enrichment lookups) need an internet connection. When you reconnect, your local activity log syncs.</p>
+      </details>
+      <details>
+        <summary>What if I cancel?</summary>
+        <p>Your CRM data is yours. Export everything as CSV. The daemon stops running. We delete your account and the per-user encryption key — observations become unrecoverable from our side within 30 days.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; width:100%;">
+    <div>© 2026 Ghostlog · The CRM that knows what you know.</div>
+    <div>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="mailto:hi@ghostlog.app">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

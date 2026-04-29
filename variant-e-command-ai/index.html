@@ -1,0 +1,2238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeadSpot.AI — Stop pulling reports. Just ask.</title>
+<meta name="description" content="The AI-native CRM you query in plain English. Auto-logged from your desktop. Scored, drafted, and stall-detected by AI that lives inside the data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF9;
+    --bg-tint: #F5F4F1;
+    --surface: #FFFFFF;
+    --ink: #18181B;
+    --ink-soft: #52525B;
+    --ink-faint: #A1A1AA;
+    --line: #E7E5E4;
+    --line-strong: #D4D4D8;
+    --violet: #6D28D9;
+    --violet-deep: #5B21B6;
+    --violet-soft: #EDE9FE;
+    --cyan: #06B6D4;
+    --green: #059669;
+    --amber: #D97706;
+    --red: #DC2626;
+    --max: 1200px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--line);
+    background: rgba(250,250,249,0.85);
+    backdrop-filter: blur(10px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0;
+  }
+  .logo {
+    font-weight: 700; font-size: 17px; letter-spacing: -0.015em;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-mark {
+    width: 22px; height: 22px;
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    border-radius: 6px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+  }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a {
+    color: var(--ink-soft); text-decoration: none; font-size: 14px; font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--ink); color: white !important;
+    padding: 8px 14px; border-radius: 7px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 96px 0 64px;
+    text-align: center;
+    position: relative;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 80%; height: 100%;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(109,40,217,0.06), transparent 50%),
+      radial-gradient(ellipse at 80% 0%, rgba(6,182,212,0.05), transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+  .hero > * { position: relative; z-index: 1; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 100px;
+    background: var(--violet-soft); color: var(--violet-deep);
+    font-size: 13px; font-weight: 500; margin-bottom: 28px;
+    border: 1px solid rgba(109,40,217,0.12);
+  }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--violet); }
+  h1 {
+    font-size: 88px; line-height: 1.0; letter-spacing: -0.04em;
+    font-weight: 700; max-width: 13ch;
+    margin: 0 auto 28px;
+  }
+  h1 .ai-grad {
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  /* Hero headline blur-in (word-by-word stagger, reactbits.dev pattern).
+     Each .blur-word starts blurred + offset + invisible, then animates in
+     with a delay derived from its --i custom property. The animation
+     runs once on page load.
+
+     Tuning: duration 1.3s, stagger 220ms, initial delay 200ms.
+     Total animation time for the 5-unit hero headline: ~2.5s. */
+  .blur-word {
+    display: inline-block;
+    opacity: 0;
+    filter: blur(14px);
+    transform: translateY(22px);
+    animation: blur-word-in 1.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(var(--i, 0) * 220ms + 200ms);
+    will-change: opacity, filter, transform;
+  }
+  /* Line 2 of the hero (the .ai-grad gradient line) animates as one unit
+     and is allowed a slightly longer settle so the gradient drift feels
+     intentional. */
+  .blur-word.blur-line {
+    animation-duration: 1.6s;
+  }
+  @keyframes blur-word-in {
+    0%   { opacity: 0; filter: blur(14px); transform: translateY(22px); }
+    55%  { opacity: 1; filter: blur(0);    transform: translateY(0); }
+    100% { opacity: 1; filter: blur(0);    transform: translateY(0); }
+  }
+  /* Reduced-motion: skip the blur + Y-offset, keep a brief opacity fade. */
+  @media (prefers-reduced-motion: reduce) {
+    .blur-word {
+      animation: blur-word-fade 0.5s ease-out forwards;
+      animation-delay: calc(var(--i, 0) * 80ms);
+      filter: none;
+      transform: none;
+    }
+    @keyframes blur-word-fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+  }
+  .lede {
+    font-size: 21px; line-height: 1.5; color: var(--ink-soft);
+    max-width: 56ch; margin: 0 auto 40px;
+  }
+  .cta-row {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    flex-wrap: wrap; margin-bottom: 64px;
+  }
+  .btn-primary {
+    background: var(--ink); color: white;
+    padding: 14px 22px; border-radius: 10px;
+    font-weight: 600; font-size: 15px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.1s, background 0.15s;
+  }
+  .btn-primary:hover { background: #27272A; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface); color: var(--ink);
+    padding: 14px 22px; border-radius: 10px;
+    font-weight: 500; font-size: 15px; text-decoration: none;
+    border: 1px solid var(--line); display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { border-color: var(--ink-faint); }
+
+  /* Command palette mock */
+  .palette {
+    max-width: 760px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -12px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+    text-align: left;
+  }
+  .palette-input {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--line);
+  }
+  .palette-icon {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    border-radius: 7px;
+    display: grid; place-items: center;
+    color: white; font-size: 14px; font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(109,40,217,0.3);
+  }
+  .palette-q {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .palette-q::after {
+    content: '|'; color: var(--violet); font-weight: 400;
+    animation: blink 1s step-end infinite;
+    margin-left: 2px;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .palette-shortcut {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--bg-tint); color: var(--ink-soft);
+    padding: 4px 8px; border-radius: 5px; border: 1px solid var(--line);
+  }
+
+  .palette-result {
+    padding: 18px 22px;
+    background: var(--bg-tint);
+  }
+  .palette-result-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--ink-faint); letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .palette-result-label::before {
+    content: ''; width: 6px; height: 6px; background: var(--green); border-radius: 50%;
+    box-shadow: 0 0 8px rgba(5,150,105,0.5);
+  }
+  .palette-summary {
+    font-size: 15px; color: var(--ink); margin-bottom: 16px; font-weight: 500;
+  }
+  .palette-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; margin-bottom: 8px;
+  }
+  .palette-row:last-of-type { margin-bottom: 0; }
+  .palette-row .risk-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 8px rgba(220,38,38,0.5);
+    flex-shrink: 0;
+  }
+  .palette-row .risk-dot.med { background: var(--amber); box-shadow: 0 0 8px rgba(217,119,6,0.5); }
+  .palette-row-info { flex: 1; min-width: 0; }
+  .palette-row-name { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .palette-row-meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .palette-row-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; font-weight: 600; color: var(--ink); flex-shrink: 0;
+  }
+  .palette-cta {
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .palette-action {
+    font-size: 12px; padding: 6px 12px; border-radius: 6px;
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink); display: inline-flex; align-items: center; gap: 6px;
+    font-weight: 500;
+  }
+  .palette-action.primary {
+    background: var(--violet); color: white; border-color: var(--violet);
+  }
+
+  .hero-trust {
+    margin-top: 32px;
+    display: flex; gap: 24px; justify-content: center; align-items: center;
+    color: var(--ink-faint); font-size: 13px; flex-wrap: wrap;
+  }
+  .hero-trust strong { color: var(--ink); font-weight: 600; }
+
+  /* Social proof strip — placeholder data, swap when real */
+  .social-proof {
+    margin-top: 24px;
+    display: inline-flex; align-items: center; gap: 14px;
+    padding: 10px 18px;
+    background: var(--surface);
+    border: 1px dashed var(--line-strong);
+    border-radius: 100px;
+    font-size: 13px; color: var(--ink-soft);
+  }
+  /* Generic placeholder marker. ANY element with [data-placeholder] gets:
+     - A dashed red outline so it stands out visually
+     - A "REPLACE BEFORE SHIP" badge in the top-left corner via ::before
+     Strip these (delete this block + remove all data-placeholder attrs)
+     once everything is real. */
+  [data-placeholder] {
+    position: relative;
+    outline: 2px dashed rgba(220, 38, 38, 0.5);
+    outline-offset: 4px;
+  }
+  [data-placeholder]::before {
+    content: '⚠ REPLACE BEFORE SHIP — ' attr(data-placeholder);
+    position: absolute;
+    top: -22px; left: -2px;
+    background: #DC2626;
+    color: white;
+    font: 700 10px/1 ui-monospace, SFMono-Regular, monospace;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    z-index: 50;
+    pointer-events: none;
+  }
+  .social-proof-avatars { display: flex; }
+  .social-proof-avatars .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: grid; place-items: center;
+    color: white; font-size: 11px; font-weight: 700;
+    border: 2px solid var(--surface);
+    margin-left: -8px;
+    font-family: 'Inter', sans-serif;
+  }
+  .social-proof-avatars .avatar:first-child { margin-left: 0; }
+  .social-proof-avatars .a1 { background: linear-gradient(135deg,#6D28D9,#06B6D4); }
+  .social-proof-avatars .a2 { background: linear-gradient(135deg,#059669,#84CC16); }
+  .social-proof-avatars .a3 { background: linear-gradient(135deg,#DC2626,#F59E0B); }
+  .social-proof-avatars .a4 { background: linear-gradient(135deg,#0EA5E9,#6366F1); }
+  .social-proof-avatars .a5 { background: linear-gradient(135deg,#EC4899,#8B5CF6); }
+  .social-proof-text strong { color: var(--ink); font-weight: 600; }
+  .social-proof-text em { color: var(--ink-soft); font-style: italic; }
+
+  /* Hero command-palette typing animation (CSS-only, runs once on load) */
+  .palette-q {
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    width: 0;
+    animation: typing 2.6s steps(48, end) 0.5s forwards;
+  }
+  @keyframes typing {
+    from { width: 0; }
+    to   { width: 100%; }
+  }
+  .palette-result {
+    opacity: 0;
+    animation: fade-in 0.6s ease-out 3.2s forwards;
+  }
+  .palette-row {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: fade-in-row 0.5s ease-out forwards;
+  }
+  .palette-row:nth-of-type(1) { animation-delay: 3.6s; }
+  .palette-row:nth-of-type(2) { animation-delay: 3.95s; }
+  .palette-row:nth-of-type(3) { animation-delay: 4.30s; }
+  .palette-cta {
+    opacity: 0;
+    animation: fade-in 0.5s ease-out 4.8s forwards;
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes fade-in-row {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  /* Respect reduced-motion preference */
+  @media (prefers-reduced-motion: reduce) {
+    .palette-q { width: 100%; animation: none; }
+    .palette-result, .palette-row, .palette-cta { opacity: 1; animation: none; transform: none; }
+  }
+
+  /* Section base */
+  section { padding: 96px 0; }
+  .section-eyebrow {
+    font-size: 13px; color: var(--violet-deep); letter-spacing: 0.12em;
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 14px;
+  }
+  h2 {
+    font-size: 48px; line-height: 1.08; letter-spacing: -0.025em;
+    font-weight: 700; max-width: 22ch;
+    margin-bottom: 20px;
+  }
+  .section-lede {
+    font-size: 19px; color: var(--ink-soft); max-width: 56ch;
+    margin-bottom: 56px;
+  }
+
+  /* Three queries section */
+  .queries {
+    display: grid; grid-template-columns: 1fr; gap: 16px;
+  }
+  .query-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .query-prompt-wrap {
+    display: flex; flex-direction: column; gap: 12px;
+    padding-right: 24px;
+    border-right: 1px solid var(--line);
+  }
+  .query-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .query-prompt {
+    font-family: 'JetBrains Mono', monospace; font-size: 18px;
+    color: var(--ink); line-height: 1.4; font-weight: 500;
+  }
+  .query-prompt::before {
+    content: '> '; color: var(--violet); font-weight: 700;
+  }
+  .query-explain {
+    font-size: 14px; color: var(--ink-soft); line-height: 1.5;
+    margin-top: auto;
+  }
+  .query-answer {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .answer-summary {
+    font-size: 15px; color: var(--ink-soft); margin-bottom: 8px;
+  }
+  .answer-summary strong { color: var(--ink); font-weight: 600; }
+  .answer-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; border-top: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .answer-row:first-of-type { border-top: none; }
+  .answer-row .answer-name { color: var(--ink); font-weight: 500; }
+  .answer-row .answer-meta { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+  /* Background AI section */
+  .background-ai {
+    background: var(--bg-tint);
+  }
+  .while-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+  .while-card {
+    background: var(--surface);
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 28px;
+    position: relative;
+  }
+  .while-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--violet-soft) 0%, #DCFCE7 100%);
+    color: var(--violet-deep);
+    border-radius: 10px;
+    display: grid; place-items: center;
+    margin-bottom: 18px;
+  }
+  .while-card h3 {
+    font-size: 18px; font-weight: 600; letter-spacing: -0.01em;
+    margin-bottom: 8px;
+  }
+  .while-card p {
+    font-size: 14px; color: var(--ink-soft); line-height: 1.55;
+    margin-bottom: 14px;
+  }
+  .while-card-demo {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: var(--bg-tint); border: 1px solid var(--line);
+    padding: 10px 12px; border-radius: 8px;
+    color: var(--ink-soft); line-height: 1.5;
+  }
+  .while-card-demo strong { color: var(--violet-deep); font-weight: 600; }
+
+  /* ─── Conversational AI section ─── */
+  .conv-section { padding: 96px 0; }
+  .conv-card {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 24px 48px -16px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .conv-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-tint);
+  }
+  .conv-header .palette-icon { width: 24px; height: 24px; font-size: 12px; border-radius: 6px; }
+  .conv-header-meta {
+    flex: 1;
+    font-size: 13px; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .conv-header-meta strong { color: var(--ink); font-weight: 600; }
+  .conv-header-tag {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--violet-soft); color: var(--violet-deep);
+    padding: 3px 8px; border-radius: 5px;
+    letter-spacing: 0.04em;
+  }
+
+  .conv-thread {
+    padding: 32px 24px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .msg { display: flex; gap: 12px; max-width: 88%; }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    flex-shrink: 0;
+    display: grid; place-items: center;
+    font-size: 12px; font-weight: 700;
+    margin-top: 2px;
+  }
+  .msg.user .msg-avatar {
+    background: var(--ink); color: white;
+  }
+  .msg.ai .msg-avatar {
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    color: white;
+  }
+  .msg-bubble {
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .msg.user .msg-bubble {
+    background: var(--ink); color: white;
+    border-bottom-right-radius: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+  }
+  .msg.ai .msg-bubble {
+    background: var(--bg-tint); color: var(--ink);
+    border: 1px solid var(--line);
+    border-bottom-left-radius: 4px;
+  }
+  .msg.ai .msg-bubble strong { color: var(--ink); font-weight: 600; }
+
+  .msg-rows {
+    margin-top: 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .msg-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .msg-row .row-name { font-weight: 600; }
+  .msg-row .row-meta { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+
+  .msg-actions {
+    margin-top: 12px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .msg-action-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .msg-action-chip.done {
+    background: rgba(5,150,105,0.08);
+    border-color: rgba(5,150,105,0.3);
+    color: var(--green);
+  }
+  .msg-action-chip.done::before { content: '✓'; font-weight: 700; }
+
+  .msg-quote {
+    margin-top: 10px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--violet);
+    background: var(--surface);
+    border-radius: 0 8px 8px 0;
+    font-size: 14px; font-style: italic; color: var(--ink-soft);
+    line-height: 1.55;
+  }
+
+  .conv-input {
+    border-top: 1px solid var(--line);
+    padding: 14px 22px;
+    background: var(--bg-tint);
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--ink-faint);
+  }
+  .conv-input::before {
+    content: '+'; color: var(--violet); font-weight: 700; font-size: 18px;
+  }
+  .conv-cursor::after {
+    content: '|'; color: var(--violet);
+    animation: blink 1s step-end infinite;
+    margin-left: 1px;
+  }
+
+  /* ─── Ambient section ──────────── */
+  .ambient-section {
+    padding: 96px 0;
+    background: linear-gradient(180deg, var(--surface) 0%, var(--bg-tint) 100%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .ambient-card {
+    margin-top: 48px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.08);
+  }
+  .ambient-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-tint);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .ambient-status {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--ink-soft);
+  }
+  .ambient-pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 12px rgba(5,150,105,0.6);
+    animation: ambient-pulse 2s ease-in-out infinite;
+  }
+  .ambient-status strong { color: var(--ink); font-weight: 600; }
+  .ambient-cycle { color: var(--ink-faint); }
+  @keyframes ambient-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.8); }
+  }
+
+  .ambient-feed {
+    padding: 8px 12px 12px;
+  }
+  .feed-row {
+    display: grid;
+    grid-template-columns: 64px 96px 1fr auto;
+    gap: 16px; align-items: center;
+    padding: 11px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin: 4px 0;
+  }
+  .feed-row + .feed-row { border-top: none; }
+  .feed-row.captured {
+    background: rgba(109,40,217,0.04);
+  }
+  .feed-row.captured:hover { background: rgba(109,40,217,0.08); }
+  .feed-row.muted { opacity: 0.55; background: var(--bg-tint); }
+  .feed-row.digest { background: linear-gradient(90deg, var(--violet-soft) 0%, transparent 100%); }
+  .feed-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: var(--ink-faint);
+  }
+  .feed-source {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 3px 8px; border-radius: 5px;
+    text-align: center;
+    width: fit-content;
+  }
+  .feed-source.gmail { color: #C5221F; border-color: rgba(197,34,31,0.2); background: rgba(197,34,31,0.05); }
+  .feed-source.linkedin { color: #0A66C2; border-color: rgba(10,102,194,0.2); background: rgba(10,102,194,0.05); }
+  .feed-source.slack { color: #611F69; border-color: rgba(97,31,105,0.2); background: rgba(97,31,105,0.05); }
+  .feed-source.calendly { color: #006BFF; border-color: rgba(0,107,255,0.2); background: rgba(0,107,255,0.05); }
+  .feed-source.zoom { color: #2D8CFF; border-color: rgba(45,140,255,0.2); background: rgba(45,140,255,0.05); }
+  .feed-content { color: var(--ink); }
+  .feed-content em { color: var(--ink-faint); font-style: normal; }
+  .feed-result {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--violet-deep); font-weight: 600;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .feed-result.skipped { color: var(--ink-faint); font-weight: 500; }
+  .feed-result.digest { color: var(--cyan); }
+
+  .ambient-stats {
+    margin-top: 32px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  }
+  .ambient-stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .ambient-stat-num {
+    font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1; margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .ambient-stat h4 {
+    font-size: 14px; font-weight: 600; margin-bottom: 6px;
+    letter-spacing: -0.005em;
+  }
+  .ambient-stat p {
+    font-size: 13px; color: var(--ink-soft); line-height: 1.5;
+  }
+
+  /* Privacy strip */
+  .privacy-strip {
+    display: grid; grid-template-columns: 1fr 1.4fr;
+    gap: 56px;
+    align-items: center;
+    padding: 56px;
+    background: var(--ink); color: white;
+    border-radius: 20px;
+  }
+  .privacy-strip h2 { color: white; max-width: 16ch; margin-bottom: 16px; }
+  .privacy-strip p { font-size: 17px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+  .privacy-checks {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .privacy-check {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.45;
+  }
+  .privacy-check svg { color: var(--green); flex-shrink: 0; margin-top: 2px; }
+
+  /* Pricing */
+  .pricing-section { text-align: center; }
+  .pricing-card {
+    max-width: 480px; margin: 32px auto 0;
+    background: var(--surface);
+    border: 2px solid var(--ink); border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    box-shadow: 8px 8px 0 var(--violet);
+  }
+  .pricing-card .pill {
+    margin-bottom: 24px;
+  }
+  .price-amount {
+    font-size: 80px; font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .price-amount sup { font-size: 32px; color: var(--ink-soft); vertical-align: super; font-weight: 500; }
+  .price-period { color: var(--ink-soft); font-size: 16px; margin: 8px 0 32px; }
+  .price-features {
+    list-style: none; text-align: left;
+    border-top: 1px solid var(--line); padding-top: 24px;
+    margin-bottom: 28px;
+  }
+  .price-features li {
+    padding: 8px 0; font-size: 15px; color: var(--ink-soft);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .price-features li::before {
+    content: '✓'; color: var(--violet); font-weight: 700; flex-shrink: 0;
+  }
+  .pricing-card .btn-primary { width: 100%; justify-content: center; }
+
+  /* FAQ */
+  .faq-section { background: var(--bg-tint); }
+  .faq { max-width: 760px; margin: 32px auto 0; }
+  .faq details {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: 22px 24px;
+    margin-bottom: 10px;
+  }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '+'; font-weight: 400; font-size: 24px; color: var(--violet);
+    transition: transform 0.2s;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details > p {
+    margin-top: 14px; color: var(--ink-soft); font-size: 15px; line-height: 1.7;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 0;
+    color: var(--ink-faint);
+    font-size: 13px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer a { color: var(--ink-soft); text-decoration: none; margin-left: 24px; }
+  footer a:hover { color: var(--ink); }
+
+  /* Mobile */
+  @media (max-width: 880px) {
+    .while-grid { grid-template-columns: 1fr; }
+    .ambient-stats { grid-template-columns: repeat(2, 1fr); }
+    .feed-row { grid-template-columns: 1fr; gap: 4px; padding: 12px; }
+    .feed-source { width: fit-content; }
+    .conv-thread { padding: 24px 16px; }
+    .msg { max-width: 100%; }
+    .query-card { grid-template-columns: 1fr; gap: 20px; }
+    .query-prompt-wrap { padding-right: 0; border-right: none; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+    .privacy-strip { grid-template-columns: 1fr; gap: 32px; padding: 40px 28px; }
+    .privacy-checks { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 20px; }
+    h1 { font-size: 52px; }
+    h2 { font-size: 32px; }
+    .lede { font-size: 17px; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    section { padding: 64px 0; }
+    .palette-q { font-size: 13px; }
+    footer { flex-direction: column; gap: 16px; }
+    footer a { margin: 0 10px; }
+  }
+
+  /* =====================================================================
+     NEW SECTIONS (added in landing-page polish pass)
+     ===================================================================== */
+
+  /* Loom-style demo thumbnail (replaces "See it answer 3 questions" deeplinking) */
+  .demo-section {
+    padding: 32px 0 0;
+    text-align: center;
+  }
+  .demo-thumb {
+    /* Block layout so aspect-ratio actually computes a 16:9 box.
+       (<a> defaults to inline; aspect-ratio is ignored on inline elements.) */
+    display: block;
+    max-width: 760px; margin: 0 auto;
+    background: var(--surface);
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 48px -16px rgba(0,0,0,0.16);
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s;
+    text-decoration: none;
+  }
+  .demo-thumb:hover { transform: translateY(-2px); box-shadow: 0 28px 56px -14px rgba(0,0,0,0.22); }
+  .demo-thumb-bg {
+    position: absolute; inset: 0;
+    background:
+      /* Subtle vignette + soft gradient for play-button legibility, but
+         light enough that Mike's face is clearly visible. Heavier toward
+         the bottom-right where the runtime badge sits. */
+      radial-gradient(ellipse at center, rgba(10,10,15,0.05) 0%, rgba(10,10,15,0.35) 100%),
+      linear-gradient(180deg, rgba(10,10,15,0) 60%, rgba(10,10,15,0.55) 100%),
+      /* Mike's headshot — sized to cover, focused on the face */
+      url('assets/mike.png') center 30% / cover no-repeat,
+      /* Fallback while image loads */
+      linear-gradient(135deg, #18181B 0%, #27272A 100%);
+  }
+  .demo-thumb-play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 76px; height: 76px;
+    background: white; border-radius: 50%;
+    display: grid; place-items: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+  .demo-thumb-play::after {
+    content: ''; width: 0; height: 0;
+    border-left: 18px solid var(--ink);
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    margin-left: 4px;
+  }
+  .demo-thumb-meta {
+    position: absolute; bottom: 16px; left: 18px; right: 18px;
+    color: white; font-size: 13px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .demo-thumb-meta .demo-title { font-weight: 600; }
+  .demo-thumb-meta .demo-time {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;
+  }
+
+  /* Comparison table */
+  .compare-section {
+    background: linear-gradient(180deg, var(--bg-tint) 0%, var(--bg) 100%);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-table {
+    max-width: 1000px; margin: 40px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(4, 1fr);
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .compare-grid:last-child { border-bottom: none; }
+  .compare-grid > div {
+    padding: 14px 16px; font-size: 14px;
+    border-right: 1px solid var(--line);
+  }
+  .compare-grid > div:last-child { border-right: none; }
+  .compare-grid.head > div {
+    background: var(--bg-tint);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .compare-grid.head .compare-us {
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    color: white;
+    text-transform: none; letter-spacing: -0.01em; font-weight: 700; font-size: 14px;
+  }
+  .compare-grid .compare-row-label {
+    font-weight: 500; color: var(--ink); text-align: left;
+  }
+  .compare-grid .compare-cell {
+    text-align: center; color: var(--ink-soft);
+  }
+  .compare-grid .compare-us {
+    text-align: center;
+    background: rgba(109,40,217,0.04);
+    color: var(--violet-deep); font-weight: 600;
+    border-right: none;
+  }
+  .compare-grid .check { color: var(--green); font-weight: 700; }
+  .compare-grid .x   { color: var(--ink-faint); }
+  .compare-footnote {
+    text-align: center; margin-top: 24px;
+    font-size: 13px; color: var(--ink-faint);
+  }
+
+  /* Privacy section (full bento — replaces strip) */
+  .privacy-section {
+    padding: 96px 0;
+    background:
+      radial-gradient(ellipse at 30% 0%, rgba(109,40,217,0.04), transparent 60%),
+      radial-gradient(ellipse at 70% 100%, rgba(6,182,212,0.04), transparent 60%),
+      var(--bg);
+  }
+  .privacy-bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 48px;
+  }
+  .privacy-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px;
+  }
+  .privacy-card h3 {
+    font-size: 17px; margin-bottom: 18px; color: var(--ink); font-weight: 700;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .privacy-card h3 .badge-yes { background: var(--green); }
+  .privacy-card h3 .badge-no  { background: var(--red); }
+  .privacy-card h3 .badge {
+    width: 22px; height: 22px; border-radius: 6px; color: white;
+    display: grid; place-items: center; font-size: 13px; font-weight: 700;
+  }
+  .privacy-list { list-style: none; padding: 0; margin: 0; }
+  .privacy-list li {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    font-size: 14px; color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+  }
+  .privacy-list li:last-child { border-bottom: none; }
+  .privacy-list li strong { color: var(--ink); font-weight: 600; }
+  .privacy-list .row-icon {
+    font-size: 14px; width: 18px; text-align: center;
+  }
+  .privacy-list.yes .row-icon { color: var(--green); }
+  .privacy-list.no .row-icon { color: var(--red); }
+
+  .privacy-toast {
+    grid-column: 1 / -1;
+    background: var(--ink); color: white;
+    border-radius: 14px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 18px;
+    align-items: center;
+  }
+  .privacy-toast .toast-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    border-radius: 8px; display: grid; place-items: center;
+    color: white; font-weight: 700;
+  }
+  .privacy-toast .toast-title { font-size: 14px; font-weight: 600; }
+  .privacy-toast .toast-sub {
+    font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .privacy-toast .toast-cancel {
+    background: white; color: var(--ink);
+    padding: 8px 14px; border-radius: 7px;
+    font-size: 13px; font-weight: 600;
+  }
+  .privacy-toast .toast-countdown {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    color: rgba(255,255,255,0.5); margin-top: 8px;
+  }
+
+  /* Pricing — savings strawman + urgency counter */
+  .price-strawman {
+    background: var(--bg-tint);
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 13px;
+  }
+  .price-strawman-header {
+    color: var(--ink-soft); font-weight: 500; margin-bottom: 10px;
+  }
+  .price-strawman-row {
+    display: flex; justify-content: space-between;
+    padding: 4px 0;
+    color: var(--ink-soft);
+  }
+  .price-strawman-row .strike { text-decoration: line-through; color: var(--ink-faint); }
+  .price-strawman-total {
+    border-top: 1px solid var(--line);
+    margin-top: 10px; padding-top: 10px;
+    display: flex; justify-content: space-between;
+    font-weight: 600; color: var(--ink);
+  }
+  .price-strawman-vs {
+    text-align: center;
+    margin-top: 12px;
+    color: var(--violet-deep); font-weight: 600; font-size: 14px;
+  }
+  .price-urgency {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(109,40,217,0.08), rgba(6,182,212,0.08));
+    border: 1px solid rgba(109,40,217,0.18);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .price-urgency strong {
+    color: var(--violet-deep); font-weight: 700;
+  }
+  .price-urgency-bar {
+    margin-top: 10px;
+    height: 6px;
+    background: var(--bg-tint);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .price-urgency-fill {
+    height: 100%;
+    width: 23%;
+    background: linear-gradient(90deg, var(--violet) 0%, var(--cyan) 100%);
+    border-radius: 100px;
+  }
+
+  /* Founder note */
+  .founder-section {
+    padding: 80px 0 0;
+    background: var(--bg);
+  }
+  .founder-card {
+    max-width: 720px; margin: 0 auto;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 32px 36px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  .founder-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    /* Mike's headshot, cropped to face. The gradient is a fallback in case
+       the image is missing — same colors as the brand, no ugly broken-image. */
+    background:
+      url('assets/mike.png') center 25% / cover no-repeat,
+      linear-gradient(135deg, var(--violet) 0%, var(--cyan) 100%);
+    flex-shrink: 0;
+    /* Subtle border to define the circle edge against light backgrounds. */
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.9), 0 4px 12px rgba(0,0,0,0.12);
+    /* Hide the fallback "MK" text once the image loads. text-indent +
+       overflow keeps it accessible to screen readers without showing it. */
+    text-indent: -9999px;
+    overflow: hidden;
+    line-height: 0;
+  }
+  .founder-text {
+    font-size: 16px; line-height: 1.65;
+    color: var(--ink);
+  }
+  .founder-text p { margin-bottom: 12px; }
+  .founder-text p:last-of-type { margin-bottom: 0; }
+  .founder-sig {
+    margin-top: 14px;
+    font-family: 'Caveat', 'Brush Script MT', cursive;
+    font-size: 24px; color: var(--violet-deep);
+  }
+  .founder-text a {
+    color: var(--violet-deep); font-weight: 600; text-decoration: none;
+    border-bottom: 1px solid var(--violet-soft);
+  }
+
+  /* Final closer CTA */
+  .closer-section {
+    padding: 96px 0;
+    text-align: center;
+    background:
+      radial-gradient(ellipse at 50% 100%, rgba(109,40,217,0.08), transparent 60%),
+      var(--bg);
+    border-top: 1px solid var(--line);
+  }
+  .closer-section h2 {
+    font-size: 56px; line-height: 1.05; letter-spacing: -0.03em;
+    max-width: 14ch; margin: 0 auto 24px;
+  }
+  .closer-section .closer-sub {
+    font-size: 18px; color: var(--ink-soft);
+    max-width: 50ch; margin: 0 auto 36px;
+  }
+  .closer-section .platform-note {
+    font-size: 12px; color: var(--ink-faint); margin-top: 18px;
+  }
+
+  /* Conv-AI confirm-phrase chip */
+  .msg-action-chip.confirm-pending {
+    background: var(--amber);
+    color: white;
+    border-color: var(--amber);
+  }
+  .msg-confirm-prompt {
+    background: var(--bg-tint);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .msg-confirm-prompt .confirm-kbd {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--ink); color: white;
+    padding: 3px 8px; border-radius: 5px; font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Ambient feed: scroll-reveal */
+  .feed-row {
+    opacity: 1; /* default — IntersectionObserver toggles when supported */
+  }
+  .feed-row.reveal-pending {
+    opacity: 0;
+    transform: translateX(-12px);
+    transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+  }
+  .feed-row.reveal-pending.is-visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .feed-row.reveal-pending.muted.is-visible {
+    animation: muted-flash 1.4s ease-out 0.2s 1;
+  }
+  @keyframes muted-flash {
+    0%   { background: rgba(220,38,38,0.06); }
+    40%  { background: rgba(220,38,38,0.12); }
+    100% { background: transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .feed-row.reveal-pending { opacity: 1; transform: none; transition: none; }
+    .feed-row.reveal-pending.muted.is-visible { animation: none; }
+  }
+
+  /* Mobile additions */
+  @media (max-width: 880px) {
+    .compare-grid {
+      grid-template-columns: 1.3fr repeat(4, 1fr);
+      font-size: 12px;
+    }
+    .compare-grid > div { padding: 10px 8px; font-size: 12px; }
+    .privacy-bento { grid-template-columns: 1fr; }
+    .privacy-toast { grid-template-columns: auto 1fr; }
+    .privacy-toast .toast-cancel { grid-column: 1 / -1; justify-self: start; margin-top: 4px; }
+    .closer-section h2 { font-size: 40px; }
+    .founder-card { grid-template-columns: 1fr; text-align: center; }
+    .founder-avatar { margin: 0 auto; }
+  }
+
+  /* =====================================================================
+     SCROLL-DRIVEN ZOOM — features grow as they enter, shrink as they exit
+     ===================================================================== */
+
+  /* The choreography keyframe. Drives both the modern `animation-timeline`
+     path AND the IntersectionObserver fallback below.
+     Pumped up so the effect is unmistakable. */
+  @keyframes scroll-zoom {
+    0%   { transform: scale(0.65) translateY(80px); opacity: 0; filter: blur(4px); }
+    30%  { transform: scale(1)    translateY(0);    opacity: 1; filter: blur(0); }
+    70%  { transform: scale(1)    translateY(0);    opacity: 1; filter: blur(0); }
+    100% { transform: scale(0.82) translateY(-30px); opacity: 0.35; filter: blur(2px); }
+  }
+
+  /* Even more dramatic for the pricing card — it's the conversion target. */
+  @keyframes scroll-zoom-strong {
+    0%   { transform: scale(0.5) translateY(120px) rotate(-2deg); opacity: 0; filter: blur(6px); }
+    30%  { transform: scale(1)   translateY(0)    rotate(0);     opacity: 1; filter: blur(0); }
+    70%  { transform: scale(1)   translateY(0)    rotate(0);     opacity: 1; filter: blur(0); }
+    100% { transform: scale(0.88) translateY(-20px) rotate(1deg); opacity: 0.5; filter: blur(2px); }
+  }
+
+  /* Subtle horizontal slide-in for table rows (reads better than scaling rows). */
+  @keyframes scroll-slide-in {
+    0%   { transform: translateX(-18px); opacity: 0; }
+    40%  { transform: translateX(0);     opacity: 1; }
+    100% { transform: translateX(0);     opacity: 1; }
+  }
+
+  /* Subtle fade-up for section headlines + eyebrows. */
+  @keyframes scroll-fade-up {
+    0%   { transform: translateY(20px); opacity: 0; }
+    40%  { transform: translateY(0);    opacity: 1; }
+    100% { transform: translateY(0);    opacity: 1; }
+  }
+
+  /* JS owns transform / opacity / filter on these elements — it writes
+     them as direct inline styles each rAF tick (translate3d forces GPU
+     compositing). The CSS here is just lifecycle hints — `will-change`
+     prepares the compositor, `transform-origin` keeps zoom centered. */
+  .scroll-zoom,
+  .scroll-zoom-strong,
+  .scroll-slide-in,
+  .scroll-fade-up {
+    will-change: transform, opacity, filter;
+    transform-origin: center center;
+    backface-visibility: hidden; /* avoids subpixel flicker on scale */
+  }
+
+  /* Reduced-motion: JS picks a gentler profile (small scale changes, no
+     blur, short translates). The CSS doesn't need to override anything —
+     letting JS run with the gentle profile is the right behavior, and
+     overriding to `none !important` here would fight the JS-applied
+     inline transform. */
+
+  /* =====================================================================
+     DARK MODE — opt-in via prefers-color-scheme
+     ===================================================================== */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0A0A0F;
+      --bg-tint: #15151B;
+      --surface: #1A1A22;
+      --ink: #F4F4F5;
+      --ink-soft: #A1A1AA;
+      --ink-faint: #71717A;
+      --line: #27272A;
+      --line-strong: #3F3F46;
+      --violet-soft: rgba(109,40,217,0.18);
+    }
+    header { background: rgba(10,10,15,0.85); }
+    .demo-thumb-bg {
+      background:
+        radial-gradient(circle at 30% 40%, rgba(109,40,217,0.32), transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(6,182,212,0.28), transparent 50%),
+        linear-gradient(135deg, #1A1A22 0%, #27272A 100%);
+    }
+    .demo-thumb-play { background: var(--ink); }
+    .demo-thumb-play::after { border-left-color: var(--bg); }
+    .privacy-toast { background: #000; }
+    .price-strawman-row .strike { color: var(--ink-faint); }
+    .compare-grid.head .compare-us, .compare-grid .compare-us {
+      color: white;
+    }
+    .compare-grid .compare-us {
+      background: linear-gradient(135deg, rgba(109,40,217,0.18), rgba(6,182,212,0.12));
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="logo-mark"></span>
+      LeadSpot.AI
+    </div>
+    <nav class="nav-links">
+      <a href="#queries">Ask</a>
+      <a href="#conversation">Converse</a>
+      <a href="#background">AI features</a>
+      <a href="#ambient">Ambient</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#install" class="nav-cta">Try free for 14 days</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="pill"><span class="pill-dot"></span> AI-native CRM · Built for founder-led sales</span>
+    <h1>
+      <span class="blur-word" style="--i:0">Close</span>
+      <span class="blur-word" style="--i:1">the</span>
+      <span class="blur-word" style="--i:2">deal</span>
+      <span class="blur-word" style="--i:3">you</span>
+      <br>
+      <!-- Line 2: kept as a single .ai-grad block so the violet→cyan gradient
+           renders as one continuous fill. background-clip:text only clips
+           direct text nodes, so we can't split this into nested word-spans
+           without losing the gradient. The whole line blur-fades as one
+           unit, which still reads as a natural continuation of line 1. -->
+      <span class="ai-grad blur-word blur-line" style="--i:4">forgot you were working.</span>
+    </h1>
+    <p class="lede">
+      Three leads went quiet last week. You know which ones?
+      LeadSpot.AI watches your desktop, fills in the right contact, scores
+      the deal, and drafts the follow-up — all in one CRM, all $39/mo, all
+      grounded in what actually happened.
+    </p>
+    <div class="cta-row">
+      <a href="#install" class="btn-primary">
+        Try free for 14 days
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#demo" class="btn-secondary">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 1.5v10l8-5-8-5z" fill="currentColor"/></svg>
+        Watch the 60s demo
+      </a>
+    </div>
+
+    <!-- Command palette mock -->
+    <div class="palette">
+      <div class="palette-input">
+        <div class="palette-icon">G</div>
+        <div class="palette-q">which deals are likely to slip this week</div>
+        <span class="palette-shortcut">⌘ K</span>
+      </div>
+      <div class="palette-result">
+        <div class="palette-result-label">Answered from 47 contacts · 12 active deals</div>
+        <div class="palette-summary">3 deals at risk this week, ranked by closeable-ness:</div>
+        <div class="palette-row">
+          <span class="risk-dot"></span>
+          <div class="palette-row-info">
+            <div class="palette-row-name">Marcus L. — Stripe</div>
+            <div class="palette-row-meta">Response time doubled · stalls in ~3d · last touch 6d ago</div>
+          </div>
+          <div class="palette-row-amount">$32k</div>
+        </div>
+        <div class="palette-row">
+          <span class="risk-dot"></span>
+          <div class="palette-row-info">
+            <div class="palette-row-name">Aisha K. — Linear</div>
+            <div class="palette-row-meta">Open rate dropped · 9d silent · score: 6.1</div>
+          </div>
+          <div class="palette-row-amount">$18k</div>
+        </div>
+        <div class="palette-row">
+          <span class="risk-dot med"></span>
+          <div class="palette-row-info">
+            <div class="palette-row-name">Tomás R. — Replit</div>
+            <div class="palette-row-meta">Mentioned competitor on call · pricing follow-up overdue</div>
+          </div>
+          <div class="palette-row-amount">$24k</div>
+        </div>
+        <div class="palette-cta">
+          <span class="palette-action primary">→ Draft re-engagement emails</span>
+          <span class="palette-action">Open in pipeline</span>
+          <span class="palette-action">Snooze · 2 days</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-trust">
+      <span><strong>$39/mo</strong> · 14-day trial</span>
+      <span>·</span>
+      <span><strong>Mac</strong> · 4-min install</span>
+      <span>·</span>
+      <span><strong>Local-first</strong> capture</span>
+      <span>·</span>
+      <span>Built for <strong>founder-led sales</strong></span>
+    </div>
+
+    <!-- Social proof strip (placeholder — replace avatars + names with real founders post-launch) -->
+    <div class="social-proof" data-placeholder="swap-when-real">
+      <div class="social-proof-avatars">
+        <span class="avatar a1">JC</span>
+        <span class="avatar a2">ML</span>
+        <span class="avatar a3">AK</span>
+        <span class="avatar a4">TR</span>
+        <span class="avatar a5">SP</span>
+      </div>
+      <div class="social-proof-text">
+        <strong>47 founders</strong> joined this week ·
+        <em>"It's the first CRM I haven't abandoned in 30 days."</em>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Demo Loom thumbnail (placeholder — record + swap before launch) -->
+<section id="demo" class="demo-section">
+  <div class="wrap">
+    <a href="#install" class="demo-thumb" aria-label="Watch the 60-second demo">
+      <div class="demo-thumb-bg"></div>
+      <div class="demo-thumb-play"></div>
+      <div class="demo-thumb-meta">
+        <span class="demo-title">Install → ask Cmd+K → see the answer cited</span>
+        <span class="demo-time">0:60</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section id="queries">
+  <div class="wrap">
+    <div class="section-eyebrow">Three things you'll ask on day one</div>
+    <h2>Your CRM is now a teammate, not a database.</h2>
+    <p class="section-lede">
+      Every LeadSpot.AI answer is grounded in real records — actual contacts, actual activity,
+      actual deal stages. No hallucinations, no "based on industry averages." It only
+      answers from what it knows about your pipeline.
+    </p>
+
+    <div class="queries">
+      <div class="query-card scroll-zoom">
+        <div class="query-prompt-wrap">
+          <div class="query-label">Question 01</div>
+          <div class="query-prompt">show me leads who opened my email twice but didn't reply</div>
+          <div class="query-explain">Most CRMs require you to build a custom segment with three filters. LeadSpot.AI reads what you mean and returns the records.</div>
+        </div>
+        <div class="query-answer">
+          <div class="answer-summary"><strong>4 leads</strong> match · ranked by recency</div>
+          <div class="answer-row"><span class="answer-name">Jane Chen</span><span class="answer-meta">Acme · opened 4× · 6d ago</span></div>
+          <div class="answer-row"><span class="answer-name">Marcus L.</span><span class="answer-meta">Stripe · opened 3× · 4d ago</span></div>
+          <div class="answer-row"><span class="answer-name">Aisha K.</span><span class="answer-meta">Linear · opened 2× · 9d ago</span></div>
+          <div class="answer-row"><span class="answer-name">Tomás R.</span><span class="answer-meta">Replit · opened 2× · 11d ago</span></div>
+        </div>
+      </div>
+
+      <div class="query-card scroll-zoom">
+        <div class="query-prompt-wrap">
+          <div class="query-label">Question 02</div>
+          <div class="query-prompt">draft a follow-up to marcus that addresses the SSO question he raised on the call</div>
+          <div class="query-explain">The AI reads the actual transcript from the Zoom LeadSpot.AI auto-logged. It knows what Marcus asked. The draft lands in your voice.</div>
+        </div>
+        <div class="query-answer">
+          <div class="answer-summary">Draft ready · grounded in <strong>3 prior emails + 1 call transcript</strong></div>
+          <div style="background: var(--bg-tint); border: 1px solid var(--line); border-radius: 10px; padding: 16px; font-size: 14px; color: var(--ink-soft); line-height: 1.6;">
+            "Hey Marcus — circling back on the SSO question from last Thursday. Our SAML rollout lands in 2 weeks, and we can lock founder pricing for Y2 if we close before EOQ. Quick 15-min sync this week to confirm scope?"
+          </div>
+        </div>
+      </div>
+
+      <div class="query-card scroll-zoom">
+        <div class="query-prompt-wrap">
+          <div class="query-label">Question 03</div>
+          <div class="query-prompt">summarize where things stand with acme</div>
+          <div class="query-explain">All emails, calls, DMs, and calendar events with anyone at Acme — distilled into the relationship state in 3 lines.</div>
+        </div>
+        <div class="query-answer">
+          <div class="answer-summary">Acme Corp · <strong>$40k deal</strong> · stage: Negotiation</div>
+          <div style="border-left: 2px solid var(--violet); padding: 14px 18px; background: var(--bg-tint); border-radius: 0 10px 10px 0; font-size: 15px; color: var(--ink); line-height: 1.6; font-style: italic;">
+            "Met Jane Chen at SaaStr. Discussed pricing twice and SSO once. Q3 deadline driven by their security team. Last touch 6 days ago — Jane replied positively but you haven't responded. Recommend: send the SSO timeline today."
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="conversation" class="conv-section">
+  <div class="wrap">
+    <div class="section-eyebrow">Conversational AI</div>
+    <h2>Not just queries. A conversation that takes action.</h2>
+    <p class="section-lede">
+      Ask a question, refine the answer, then have the AI act on it — all in one
+      thread. LeadSpot.AI's conversational layer holds context across turns, references
+      past activity, and executes actions on your pipeline when you tell it to.
+    </p>
+
+    <div class="conv-card">
+      <div class="conv-header">
+        <div class="palette-icon">G</div>
+        <div class="conv-header-meta">
+          <strong>LeadSpot.AI</strong> · ongoing thread · 47 contacts · 12 active deals in context
+        </div>
+        <div class="conv-header-tag">CONTEXT-AWARE</div>
+      </div>
+
+      <div class="conv-thread">
+        <div class="msg user">
+          <div class="msg-avatar">M</div>
+          <div class="msg-bubble">show me deals about to slip this week</div>
+        </div>
+
+        <div class="msg ai">
+          <div class="msg-avatar">G</div>
+          <div class="msg-bubble">
+            <strong>3 deals at risk</strong>, ranked by closeable-ness:
+            <div class="msg-rows">
+              <div class="msg-row"><span class="row-name">Marcus L. — Stripe</span><span class="row-meta">$32k · stalls in ~3d</span></div>
+              <div class="msg-row"><span class="row-name">Aisha K. — Linear</span><span class="row-meta">$18k · 9d silent</span></div>
+              <div class="msg-row"><span class="row-name">Tomás R. — Replit</span><span class="row-meta">$24k · pricing overdue</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">M</div>
+          <div class="msg-bubble">draft re-engagement emails for all three</div>
+        </div>
+
+        <div class="msg ai">
+          <div class="msg-avatar">G</div>
+          <div class="msg-bubble">
+            Drafts ready, grounded in each thread's history. Want me to show, send, or queue?
+            <div class="msg-actions">
+              <span class="msg-action-chip done">Marcus draft</span>
+              <span class="msg-action-chip done">Aisha draft</span>
+              <span class="msg-action-chip done">Tomás draft</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">M</div>
+          <div class="msg-bubble">send marcus, queue the others for tomorrow 9am</div>
+        </div>
+
+        <!-- The MOAT made visible: AI cannot send without explicit confirm phrase -->
+        <div class="msg ai">
+          <div class="msg-avatar">G</div>
+          <div class="msg-bubble">
+            About to send 1 email and queue 2. Reply
+            <span class="msg-action-chip confirm-pending">send</span>
+            to confirm, or
+            <span class="msg-action-chip">cancel</span>
+            to drop them.
+            <div class="msg-confirm-prompt">
+              <span>Write actions are gated.</span>
+              <span class="confirm-kbd">send</span>
+              <span>= execute · anything else = no-op.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">M</div>
+          <div class="msg-bubble">send</div>
+        </div>
+
+        <div class="msg ai">
+          <div class="msg-avatar">G</div>
+          <div class="msg-bubble">
+            Done.
+            <div class="msg-actions">
+              <span class="msg-action-chip done">Sent · Marcus L. · 11:42 AM</span>
+              <span class="msg-action-chip done">Queued · Aisha K. · Apr 28 9:00 AM</span>
+              <span class="msg-action-chip done">Queued · Tomás R. · Apr 28 9:00 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="msg user">
+          <div class="msg-avatar">M</div>
+          <div class="msg-bubble">what did marcus say about pricing on the call last thursday?</div>
+        </div>
+
+        <div class="msg ai">
+          <div class="msg-avatar">G</div>
+          <div class="msg-bubble">
+            From the <strong>Mar 21 Zoom transcript</strong> Ambient auto-saved:
+            <div class="msg-quote">
+              "We need SSO before we can sign — that's a hard requirement from our security team. The pricing's fine, but Y2 lock would help us internally."
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conv-input">
+        <span>Reply</span>
+        <span class="conv-cursor"></span>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 56px;">
+      <div>
+        <div class="section-eyebrow" style="margin-bottom: 8px;">Multi-turn memory</div>
+        <p style="font-size: 15px; color: var(--ink-soft); line-height: 1.6;">Holds context across the conversation. Refer to "those three" in the next message — it knows what you mean. Pick up the thread tomorrow — it remembers.</p>
+      </div>
+      <div>
+        <div class="section-eyebrow" style="margin-bottom: 8px;">Takes action</div>
+        <p style="font-size: 15px; color: var(--ink-soft); line-height: 1.6;">Send emails. Queue follow-ups. Update deal stages. Move records. Schedule reminders. LeadSpot.AI doesn't just answer — it does what you ask.</p>
+      </div>
+      <div>
+        <div class="section-eyebrow" style="margin-bottom: 8px;">Cites the source</div>
+        <p style="font-size: 15px; color: var(--ink-soft); line-height: 1.6;">Every answer references the actual record — call transcript, email thread, deal stage. Always grounded. No hallucinated facts about your customers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="background" class="background-ai">
+  <div class="wrap">
+    <div class="section-eyebrow">While you're working</div>
+    <h2>Six AI features running in the background. Forever.</h2>
+    <p class="section-lede">
+      You don't need to invoke them. They run continuously, on the data LeadSpot.AI already
+      has from watching your work. The pipeline updates itself.
+    </p>
+
+    <div class="while-grid">
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" fill="currentColor"/><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.4"/></svg>
+        </div>
+        <h3>Auto-logged activity</h3>
+        <p>Every email, DM, call, and calendar event gets logged on the right contact — automatically. Across Gmail, LinkedIn, Slack, Calendly, Zoom.</p>
+        <div class="while-card-demo">→ <strong>Activity logged</strong>: jane@acme.com · 11:42</div>
+      </div>
+
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 14V8m4 6V4m4 10v-4m4 4V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Real-signal lead scoring</h3>
+        <p>Not demographics. Real signals: response cadence, opens, mentions, similarity to past wins. The score updates as the relationship moves.</p>
+        <div class="while-card-demo">jane@acme.com → score <strong>8.4</strong> · ↑ from 7.1</div>
+      </div>
+
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Drafted follow-ups</h3>
+        <p>Reads the actual conversation, drafts the next message in your voice. You skim, edit, send. You don't write from scratch at 11pm.</p>
+        <div class="while-card-demo"><strong>Draft ready</strong> · queue: 3 messages</div>
+      </div>
+
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v9m0 4v.5M3 10a7 7 0 1 1 14 0 7 7 0 0 1-14 0Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Stall detection</h3>
+        <p>Pattern-matches your past wins/losses. Flags the deal that's about to slip — before it does.</p>
+        <div class="while-card-demo"><strong>2 deals at risk</strong> this week · review →</div>
+      </div>
+
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v8m0 0 3-3m-3 3-3-3M3 14v2h14v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Auto-enrichment</h3>
+        <p>New contact lands? AI fills in role, company, LinkedIn, recent press. You filled out zero forms.</p>
+        <div class="while-card-demo">enriched <strong>Jane Chen · VP Sales · Acme</strong></div>
+      </div>
+
+      <div class="while-card scroll-zoom">
+        <div class="while-icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>3-line relationship summaries</h3>
+        <p>Open any contact. Read the relationship state in one breath. No re-reading 40 emails before a call.</p>
+        <div class="while-card-demo">"Met SaaStr · pricing × 2 · Q3 deadline."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ambient" class="ambient-section">
+  <div class="wrap">
+    <div class="section-eyebrow">The data layer</div>
+    <h2>Powered by Ambient — the daemon that watches your work.</h2>
+    <p class="section-lede">
+      Ambient is LeadSpot.AI's local-first capture daemon. It runs every 5 minutes,
+      observes the apps you've allowlisted, and feeds the AI everything it needs.
+      Nothing the AI knows came from somewhere else.
+    </p>
+
+    <div class="ambient-card">
+      <div class="ambient-header">
+        <div class="ambient-status">
+          <span class="ambient-pulse"></span>
+          <strong>ambient</strong> · running
+        </div>
+        <div class="ambient-cycle">last cycle 14s ago · next in 4m 46s</div>
+      </div>
+
+      <div class="ambient-feed">
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">09:14</span>
+          <span class="feed-source gmail">Gmail</span>
+          <span class="feed-content">Replied to <strong>Jane Chen</strong> — "Q3 pricing"</span>
+          <span class="feed-result">→ Activity logged</span>
+        </div>
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">10:32</span>
+          <span class="feed-source linkedin">LinkedIn</span>
+          <span class="feed-content">DM exchange with <strong>Marcus L.</strong> — Stripe</span>
+          <span class="feed-result">→ Activity logged</span>
+        </div>
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">11:08</span>
+          <span class="feed-source calendly">Calendly</span>
+          <span class="feed-content">Booked: <strong>Acme onboarding</strong> · Apr 30 · 30 min</span>
+          <span class="feed-result">→ Meeting linked</span>
+        </div>
+        <div class="feed-row muted reveal-pending">
+          <span class="feed-time">12:45</span>
+          <span class="feed-source">[muted]</span>
+          <span class="feed-content"><em>1Password vault opened · banking tab active</em></span>
+          <span class="feed-result skipped">— skipped</span>
+        </div>
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">13:20</span>
+          <span class="feed-source slack">Slack</span>
+          <span class="feed-content">Mentioned by <strong>aisha@linear</strong> in #partnerships</span>
+          <span class="feed-result">→ Activity logged</span>
+        </div>
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">14:22</span>
+          <span class="feed-source zoom">Zoom</span>
+          <span class="feed-content"><strong>Acme Q3 review</strong> · 32 min · transcript ready</span>
+          <span class="feed-result">→ Call + transcript</span>
+        </div>
+        <div class="feed-row captured reveal-pending">
+          <span class="feed-time">16:05</span>
+          <span class="feed-source gmail">Gmail</span>
+          <span class="feed-content"><strong>Tomás R.</strong> opened "pricing tier breakdown"</span>
+          <span class="feed-result">→ Score updated</span>
+        </div>
+        <div class="feed-row digest reveal-pending">
+          <span class="feed-time">17:30</span>
+          <span class="feed-source">Digest</span>
+          <span class="feed-content">Daily summary sent: <strong>2 leads went quiet today</strong></span>
+          <span class="feed-result digest">→ Sent</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ambient-stats">
+      <div class="ambient-stat scroll-zoom">
+        <div class="ambient-stat-num">5 min</div>
+        <h4>Capture cycle</h4>
+        <p>A local Haiku-class model analyzes your screen activity every 5 minutes — not constantly, not stored as video.</p>
+      </div>
+      <div class="ambient-stat scroll-zoom">
+        <div class="ambient-stat-num">100%</div>
+        <h4>Local-first</h4>
+        <p>Screenshots and OCR text never leave your Mac. Encrypted at rest with macOS Keychain. Only redacted summaries promote.</p>
+      </div>
+      <div class="ambient-stat scroll-zoom">
+        <div class="ambient-stat-num">5 + you</div>
+        <h4>Allowlisted apps</h4>
+        <p>Gmail, LinkedIn, Slack, Calendly, Zoom by default. Add or mute any app at any time — banking and password apps are muted permanently.</p>
+      </div>
+      <div class="ambient-stat scroll-zoom">
+        <div class="ambient-stat-num">Audit log</div>
+        <h4>Every observation</h4>
+        <p>The local audit log shows every observation Ambient promoted to the cloud. Inspect, export, or delete any entry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Comparison table -->
+<section id="compare" class="compare-section">
+  <div class="wrap">
+    <div class="section-eyebrow" style="text-align: center;">Compared to what you're using now</div>
+    <h2 style="margin: 0 auto; text-align: center; max-width: 18ch;">A real CRM, for the real way founders sell.</h2>
+    <p class="section-lede" style="text-align: center; margin-left: auto; margin-right: auto;">
+      You're not a 50-person revenue org. You're a founder doing 8 conversations
+      a day across email, Slack, LinkedIn, and Zoom. Here's what that costs in
+      every tool you've tried.
+    </p>
+
+    <div class="compare-table">
+      <div class="compare-grid head">
+        <div></div>
+        <div>Spreadsheet</div>
+        <div>HubSpot Free</div>
+        <div>Gong</div>
+        <div class="compare-us">LeadSpot.AI</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Auto-logs activity</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell">Calls only</div>
+        <div class="compare-us"><span class="check">✓</span> All desktop</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">AI lead scoring</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell">Paid tier</div>
+        <div class="compare-cell"><span class="check">✓</span></div>
+        <div class="compare-us"><span class="check">✓</span> Included</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Drafts follow-ups</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell">Paid tier</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-us"><span class="check">✓</span> Included</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Plain-English queries</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell">Beta</div>
+        <div class="compare-cell">Reports only</div>
+        <div class="compare-us"><span class="check">✓</span> Cited</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Privacy: local-first capture</div>
+        <div class="compare-cell">N/A</div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-cell"><span class="x">—</span></div>
+        <div class="compare-us"><span class="check">✓</span></div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Setup time</div>
+        <div class="compare-cell">10 min</div>
+        <div class="compare-cell">~2 weeks</div>
+        <div class="compare-cell">~6 weeks</div>
+        <div class="compare-us">4 minutes</div>
+      </div>
+      <div class="compare-grid scroll-slide-in">
+        <div class="compare-row-label">Price</div>
+        <div class="compare-cell">$0</div>
+        <div class="compare-cell">$0 → $90+</div>
+        <div class="compare-cell">$1,600/seat</div>
+        <div class="compare-us"><strong>$39 flat</strong></div>
+      </div>
+    </div>
+    <div class="compare-footnote">
+      Gong is a great product — for a 30-rep team. It's not for the founder
+      who's still doing the selling. That's who LeadSpot.AI is built for.
+    </div>
+  </div>
+</section>
+
+<!-- Privacy section (full bento — replaces the strip) -->
+<section id="privacy" class="privacy-section">
+  <div class="wrap">
+    <div class="section-eyebrow" style="text-align: center;">Privacy is the architecture</div>
+    <h2 style="margin: 0 auto; text-align: center; max-width: 17ch;">Your screen never leaves your machine.</h2>
+    <p class="section-lede" style="text-align: center; margin-left: auto; margin-right: auto;">
+      The denylist runs <em>before</em> capture — by design, not by promise.
+      A 60-second hold lets you cancel any auto-log <strong>before</strong> it
+      crosses the wire.
+    </p>
+
+    <div class="privacy-bento">
+      <div class="privacy-card scroll-zoom">
+        <h3><span class="badge badge-yes">✓</span> What we watch</h3>
+        <ul class="privacy-list yes">
+          <li><span class="row-icon">✓</span><span><strong>Gmail</strong> · email threads, From: headers</span></li>
+          <li><span class="row-icon">✓</span><span><strong>Slack</strong> · DMs with peers (not bots)</span></li>
+          <li><span class="row-icon">✓</span><span><strong>LinkedIn</strong> · profile URLs, message threads</span></li>
+          <li><span class="row-icon">✓</span><span><strong>Calendly</strong> · invitee names + emails</span></li>
+          <li><span class="row-icon">✓</span><span><strong>Zoom</strong> · participant lists, transcripts</span></li>
+          <li><span class="row-icon">✓</span><span><strong>Outlook · Spark · Cron</strong> · same as above</span></li>
+        </ul>
+      </div>
+
+      <div class="privacy-card scroll-zoom">
+        <h3><span class="badge badge-no">✕</span> What we never see</h3>
+        <ul class="privacy-list no">
+          <li><span class="row-icon">✕</span><span><strong>1Password · Bitwarden</strong> · denied at app level</span></li>
+          <li><span class="row-icon">✕</span><span><strong>Banking · Coinbase · Robinhood</strong> · denied</span></li>
+          <li><span class="row-icon">✕</span><span><strong>Incognito + private windows</strong> · skipped by default</span></li>
+          <li><span class="row-icon">✕</span><span><strong>Screen-share Zoom</strong> · we don't record other people's screens</span></li>
+          <li><span class="row-icon">✕</span><span><strong>Anything you mute</strong> · per-app, per-window, per-day</span></li>
+          <li><span class="row-icon">✕</span><span><strong>Raw OCR · screenshots</strong> · stay on your Mac, encrypted</span></li>
+        </ul>
+      </div>
+
+      <!-- 60-second cancel-toast mock — directly visualizes the moat -->
+      <div class="privacy-toast">
+        <div class="toast-mark">L</div>
+        <div>
+          <div class="toast-title">Auto-log: Re: Q3 pricing — confidential → Marcus L.</div>
+          <div class="toast-sub">source: Gmail · click cancel to drop · sending in 47s</div>
+          <div class="toast-countdown">redacted summary held locally — never sent if cancelled</div>
+        </div>
+        <a href="#install" class="toast-cancel">Cancel auto-log</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" class="pricing-section">
+  <div class="wrap">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 style="margin: 0 auto;">One price. Every AI feature. No tiers.</h2>
+    <div class="pricing-card scroll-zoom-strong">
+      <span class="pill"><span class="pill-dot"></span> Founder plan</span>
+
+      <!-- "What you'd pay separately" strawman -->
+      <div class="price-strawman">
+        <div class="price-strawman-header">If you bought these as separate apps:</div>
+        <div class="price-strawman-row"><span>Apollo / lead scoring</span><span class="strike">$79/mo</span></div>
+        <div class="price-strawman-row"><span>Lavender / AI email drafts</span><span class="strike">$49/mo</span></div>
+        <div class="price-strawman-row"><span>Screen-capture daemon</span><span class="strike">$29/mo</span></div>
+        <div class="price-strawman-total"><span>Stitched together</span><span>$157/mo</span></div>
+        <div class="price-strawman-vs">— or —</div>
+      </div>
+
+      <div class="price-amount"><sup>$</sup>39</div>
+      <div class="price-period">per month · everything below · 14-day free trial</div>
+      <ul class="price-features">
+        <li>Plain-English pipeline queries (unlimited, cited)</li>
+        <li>Auto-logged activity across all major channels</li>
+        <li>AI lead scoring · stall detection · drafts · enrichment · summaries</li>
+        <li>LeadSpot.AI CRM · custom objects · webhook API</li>
+        <li>Local-first encrypted screen capture · 60-sec cancel toast</li>
+        <li>Frontier-model AI (we swap models as better ones ship)</li>
+        <li>Email support from the founder · same-day reply</li>
+      </ul>
+      <a href="#install" class="btn-primary">Start the 14-day trial</a>
+
+      <!-- Urgency: founder pricing for first 100 (placeholder counter — replace with real Stripe count) -->
+      <div class="price-urgency" data-placeholder="swap-with-real-counter">
+        <strong>Founder pricing</strong> — $39/mo locked for life.
+        Goes to $59 after the first 100 installs.
+        <br><strong>23 of 100</strong> spots taken.
+        <div class="price-urgency-bar"><div class="price-urgency-fill"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Founder note (placeholder avatar — swap with real photo) -->
+<section class="founder-section">
+  <div class="wrap">
+    <div class="founder-card scroll-zoom">
+      <div class="founder-avatar" aria-label="Mike Kraft, founder of LeadSpot.AI">MK</div>
+      <div class="founder-text">
+        <p>
+          Hey — I'm Mike. I built LeadSpot.AI after losing a $40k deal because
+          I forgot to follow up on a Tuesday. The promise on this page is what
+          it does on my own Mac, every day.
+        </p>
+        <p>
+          If anything here doesn't work the way the page says it does — or you
+          install it and feel even a little bit worse about your CRM than
+          before — email me at
+          <a href="mailto:mike@leadspot.ai">mike@leadspot.ai</a> and I'll
+          either fix it or refund you. Same day.
+        </p>
+        <div class="founder-sig">— Mike</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="faq-section">
+  <div class="wrap">
+    <div class="section-eyebrow" style="text-align: center;">FAQ</div>
+    <h2 style="margin: 0 auto; text-align: center;">Honest answers.</h2>
+    <div class="faq">
+      <details>
+        <summary>Will it slow down my Mac?</summary>
+        <p>The capture daemon polls every 3–7 minutes and runs Haiku-class inference on the OCR window. On an M1 it adds about 2–4% sustained CPU and ~120MB RAM — less than a single Chrome tab playing video. There's a hard daily token cap so cost-and-CPU spikes are mathematically bounded. If you ever feel it, hit <code>ambient pause today</code> in your terminal.</p>
+      </details>
+      <details>
+        <summary>What if I uninstall — what happens to my data?</summary>
+        <p>The installer's uninstall step revokes the device on our end and deletes the local SQLite + macOS Keychain entry. Your cloud data stays read-only for 30 days as a grace window (in case you reinstall), then it's purged for good. If you want it gone <em>now</em>, hit "Delete account" in settings and it's destroyed within 24 hours.</p>
+      </details>
+      <details>
+        <summary>Does it work with Apple Mail, Outlook, Spark, or Superhuman?</summary>
+        <p>Yes. The capture is OCR-based on the active window, not Gmail-API-based — so it watches Apple Mail, Outlook, Spark, Superhuman, and any other mail client that puts a "From: …" header on screen. Gmail in Chrome/Safari is the most-tested path, but the others work without configuration.</p>
+      </details>
+      <details>
+        <summary>What model powers the AI?</summary>
+        <p>A mix. Local Haiku-class models run on your Mac for screen analysis and entity extraction (privacy). Frontier models (Claude Sonnet / GPT-4-class) run in the cloud only for content you've explicitly shared — drafts, summaries, queries. We swap models as better ones ship; you don't have to think about it.</p>
+      </details>
+      <details>
+        <summary>Will the AI hallucinate or make up facts about my deals?</summary>
+        <p>The AI is grounded — it can only answer from records you have. Every factual claim it makes about a contact must cite at least one source signal (an actual email, Slack thread, or transcript). If it can't cite, it has to say "I don't have evidence for that." Drafts and summaries link back to the underlying activity so you can audit before sending.</p>
+      </details>
+      <details>
+        <summary>Does it watch literally everything on my screen?</summary>
+        <p>No. It watches the apps and domains on your allowlist (Gmail, Slack, LinkedIn, Calendly, Zoom, Outlook by default). Banking, password managers, crypto wallets, and incognito windows are denied at the bundle-ID level and <em>cannot</em> be enabled. Every other app is default-deny — you opt in per app, and you can mute anything any time.</p>
+      </details>
+      <details>
+        <summary>Can I import contacts from HubSpot, Pipedrive, or Attio?</summary>
+        <p>Yes. CSV import works out of the box. Direct importers for HubSpot, Pipedrive, Attio, and Folk pull contacts, companies, deals, and history. The AI auto-enriches everything on import. Most users finish in under 10 minutes.</p>
+      </details>
+      <details>
+        <summary>Can I use the AI features without sharing my screen?</summary>
+        <p>Yes — the AI features (scoring, drafts, queries, summaries, enrichment, stall detection) all work on data you import or sync from email/calendar without the desktop daemon. The auto-logging is what requires the daemon. You can run with or without it.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- Final closer CTA (high-energy ending) -->
+<section class="closer-section">
+  <div class="wrap">
+    <h2>Stop forgetting deals.</h2>
+    <p class="closer-sub">
+      Install in 4 minutes. Free for 14 days. No credit card required to start.
+    </p>
+    <a href="#install" class="btn-primary" style="font-size: 16px; padding: 16px 28px;">
+      Install for Mac
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <div class="platform-note">
+      Mac-only today · Windows in 2026 · CRM dashboard works in any browser
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; width:100%;">
+    <div>© 2026 LeadSpot.AI · Ask, don't query.</div>
+    <div>
+      <a href="#queries">Examples</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="mailto:hi@leadspot.ai">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ----------------------------------------------------------------------
+  // Scroll-reveal for the Ambient feed rows. Staggers each row by 90ms so
+  // the day plays out in front of the reader, with the [muted] row
+  // briefly red-flashing thanks to the CSS animation.
+  // ----------------------------------------------------------------------
+  (function () {
+    const rows = document.querySelectorAll('.feed-row.reveal-pending');
+    if (!rows.length || !('IntersectionObserver' in window)) {
+      rows.forEach((r) => r.classList.add('is-visible'));
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const i = Array.prototype.indexOf.call(rows, entry.target);
+        setTimeout(() => entry.target.classList.add('is-visible'), Math.max(0, i) * 90);
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.25 });
+    rows.forEach((r) => io.observe(r));
+  })();
+
+  // ----------------------------------------------------------------------
+  // Scroll-driven zoom — JS engine (rebuilt; permanent fix).
+  //
+  // Why this version:
+  //   1. Direct inline-style assignment (no CSS var() indirection). A multi-
+  //      `var()` `transform` was caching in Chrome's compositor and not
+  //      repainting when one var changed; setting `el.style.transform` to
+  //      a fresh string each frame avoids that entirely.
+  //   2. `translate3d(0,Ypx,0)` instead of `translateY(Ypx)` to force GPU
+  //      compositing — guarantees the repaint actually happens.
+  //   3. `pendingFrame`-based rAF debounce. The previous `ticking` boolean
+  //      was a footgun: if compute() ever threw, ticking stayed true forever
+  //      and no future frames scheduled. The new pattern resets per frame.
+  //   4. compute() is wrapped in try/catch — a single bad frame can no
+  //      longer kill the entire animation.
+  //   5. Diagnostic pill shows live tick count + last applied scale, so any
+  //      regression is instantly diagnosable: "tick stops incrementing"
+  //      means compute() is dead.
+  // ----------------------------------------------------------------------
+  (function () {
+    const targets = document.querySelectorAll(
+      '.scroll-zoom, .scroll-zoom-strong, .scroll-slide-in, .scroll-fade-up'
+    );
+
+    if (!targets.length) return;
+
+    // Reduced-motion: don't disable entirely — use a gentler profile
+    // (subtle fade-up, no dramatic scale or blur). This is what
+    // Linear / Vercel / Stripe do: respect the preference without
+    // making the page feel dead.
+    const reduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ------------------------------------------------------------------
+    // Math helpers — bell-curve focus around viewport center.
+    // ------------------------------------------------------------------
+    function easeInOut(t) {
+      return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    }
+
+    // Two profile sets: full motion and reduced motion. Same shape, just
+    // gentler bounds when the user prefers calm.
+    const ZOOM_PROFILE = reduced
+      ? { minScale: 0.96, maxScale: 1.0, minOpacity: 0.65, maxBlur: 0,   translateRange: 14 }
+      : { minScale: 0.78, maxScale: 1.0, minOpacity: 0.30, maxBlur: 3,   translateRange: 60 };
+    const ZOOM_STRONG_PROFILE = reduced
+      ? { minScale: 0.94, maxScale: 1.0, minOpacity: 0.55, maxBlur: 0,   translateRange: 18 }
+      : { minScale: 0.62, maxScale: 1.0, minOpacity: 0.15, maxBlur: 5,   translateRange: 100 };
+    const SLIDE_FROM_PX = reduced ? -10 : -32;
+
+    // Resolve which profile applies, then build the inline-style strings
+    // and write them DIRECTLY (no var() indirection).
+    function applyZoom(el, progress, profile) {
+      // distFromCenter: 0 at viewport center, 1 at viewport edges.
+      const distFromCenter = Math.min(1, Math.abs(progress - 0.5) * 2);
+      const focus = 1 - easeInOut(distFromCenter); // 1 at center, 0 at edges
+
+      const scale   = profile.minScale + (profile.maxScale - profile.minScale) * focus;
+      const opacity = profile.minOpacity + (1 - profile.minOpacity) * focus;
+      const blur    = profile.maxBlur * (1 - focus);
+      const ty      = (0.5 - progress) * profile.translateRange;
+
+      // Direct write — no setProperty('--var'), no composed var() transform.
+      // translate3d kicks the element onto the GPU layer.
+      el.style.transform = 'translate3d(0,' + ty.toFixed(2) + 'px,0) scale(' + scale.toFixed(4) + ')';
+      el.style.opacity   = opacity.toFixed(3);
+      el.style.filter    = blur > 0.05 ? 'blur(' + blur.toFixed(2) + 'px)' : '';
+      return scale;
+    }
+
+    function applySlideIn(el, progress) {
+      // One-shot slide on entry only — table rows shouldn't slide back out.
+      const enterT = Math.max(0, Math.min(1, (progress - 0.20) / 0.30));
+      const eased = easeInOut(enterT);
+      const tx = SLIDE_FROM_PX * (1 - eased);
+      el.style.transform = 'translate3d(' + tx.toFixed(2) + 'px,0,0)';
+      el.style.opacity   = eased.toFixed(3);
+      return 1;
+    }
+
+    // ------------------------------------------------------------------
+    // The compute loop. Wrapped in try/catch so a thrown frame doesn't
+    // permanently kill scheduling.
+    // ------------------------------------------------------------------
+    function compute() {
+      try {
+        const vh = window.innerHeight;
+        // Use a wider window than viewport so the animation extends a bit
+        // beyond top/bottom edges (so cards at the very edges are still
+        // partway into their progress curve, not stuck at 0 or 1).
+        const window_height = vh * 1.3;
+        const window_center = vh / 2;
+        const window_top = window_center - window_height / 2;
+
+        for (let i = 0; i < targets.length; i++) {
+          const el = targets[i];
+          const rect = el.getBoundingClientRect();
+          const elCenter = rect.top + rect.height / 2;
+
+          // progress: 0 = element below window, 0.5 = at window center,
+          // 1 = above window top.
+          let progress = 1 - (elCenter - window_top) / window_height;
+          progress = Math.max(0, Math.min(1, progress));
+
+          if (el.classList.contains('scroll-zoom-strong')) {
+            applyZoom(el, progress, ZOOM_STRONG_PROFILE);
+          } else if (el.classList.contains('scroll-slide-in')) {
+            applySlideIn(el, progress);
+          } else {
+            applyZoom(el, progress, ZOOM_PROFILE);
+          }
+        }
+      } catch (err) {
+        console.warn('[scroll-zoom] compute error', err);
+        // Don't rethrow — the schedule loop must keep running.
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // SELF-DRIVING rAF LOOP — does NOT depend on scroll events.
+    //
+    // Why: some Chrome extensions (notably screen-capture extensions like
+    // Coder1 Capture) attach passive listeners to scroll events that can
+    // throttle or swallow them in unpredictable ways. We've seen this
+    // reproduce as "scroll fires in headless Chromium but not in real
+    // Chrome with extensions installed."
+    //
+    // Solution: forget scroll events entirely. Run a tight rAF loop that
+    // compares the current scrollY (or lastKnownScrollY) to the last seen
+    // value, and only calls compute() when it changes. Cost when idle:
+    // one float comparison per frame (~free). Cost when scrolling: same
+    // as before. Always runs, can never be blocked by extensions.
+    // ------------------------------------------------------------------
+    let lastSeenScrollY = -1;
+    let lastSeenWidth = -1;
+    let lastSeenHeight = -1;
+    function loop() {
+      const sy = window.scrollY || window.pageYOffset || 0;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (sy !== lastSeenScrollY || w !== lastSeenWidth || h !== lastSeenHeight) {
+        lastSeenScrollY = sy;
+        lastSeenWidth = w;
+        lastSeenHeight = h;
+        compute();
+      }
+      requestAnimationFrame(loop);
+    }
+    // Initial paint + start the loop.
+    compute();
+    requestAnimationFrame(loop);
+  })();
+</script>
+
+</body>
+</html>

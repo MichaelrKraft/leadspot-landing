@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ghostlog — Your CRM should write itself</title>
+<meta name="description" content="Ghostlog watches your work and quietly fills in your CRM. No buttons. No reminders. No empty fields.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --bg-alt: #F4F4F4;
+    --ink: #0A0A0A;
+    --ink-soft: #525252;
+    --ink-faint: #A3A3A3;
+    --line: #E5E5E5;
+    --line-strong: #D4D4D4;
+    --accent: #16A34A;
+    --accent-deep: #15803D;
+    --accent-soft: #DCFCE7;
+    --max: 1140px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 32px; }
+
+  /* ─── Header ─────────────────────── */
+  header {
+    border-bottom: 1px solid var(--line);
+    background: rgba(250,250,250,0.85);
+    backdrop-filter: blur(8px);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 0;
+  }
+  .logo {
+    font-weight: 700; font-size: 18px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo-mark {
+    width: 22px; height: 22px; background: var(--ink); border-radius: 6px;
+    display: grid; place-items: center;
+  }
+  .logo-mark::before {
+    content: ''; width: 8px; height: 8px; background: var(--accent); border-radius: 2px;
+  }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: var(--ink-soft); text-decoration: none; font-size: 15px; font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--ink); color: white !important; padding: 8px 16px;
+    border-radius: 8px; font-size: 14px !important;
+  }
+
+  /* ─── Hero ───────────────────────── */
+  .hero {
+    padding: 96px 0 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(22,163,74,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--accent-deep); text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  h1 {
+    font-size: 72px; line-height: 1.02; letter-spacing: -0.035em;
+    font-weight: 700; max-width: 14ch;
+    margin-bottom: 24px;
+  }
+  .lede {
+    font-size: 21px; line-height: 1.5; color: var(--ink-soft);
+    max-width: 56ch; margin-bottom: 40px;
+  }
+  .cta-row {
+    display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--ink); color: white;
+    padding: 14px 24px; border-radius: 10px;
+    font-weight: 600; font-size: 16px; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.1s ease, background 0.15s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: #1F1F1F; transform: translateY(-1px); }
+  .btn-secondary {
+    color: var(--ink); text-decoration: none;
+    font-weight: 500; font-size: 16px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 14px 8px;
+  }
+  .btn-secondary:hover .chev { transform: translateX(2px); }
+  .chev { transition: transform 0.15s; }
+
+  /* Hero visual (mocked product card with annotations) */
+  .hero-visual {
+    margin-top: 72px;
+    position: relative;
+    max-width: 920px;
+  }
+  .product-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px -12px rgba(10,10,10,0.10), 0 4px 8px -2px rgba(10,10,10,0.04);
+    overflow: hidden;
+  }
+  .product-card-header {
+    display: flex; gap: 6px; padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-alt);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--line-strong); }
+  .product-card-body {
+    display: grid; grid-template-columns: 1fr 1.2fr; min-height: 380px;
+  }
+  .source-pane {
+    border-right: 1px solid var(--line); padding: 24px;
+    background: var(--bg-alt);
+  }
+  .source-pane-label {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 16px; font-weight: 600;
+  }
+  .email-mock {
+    background: white; border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px;
+  }
+  .email-meta { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  .email-meta strong { color: var(--ink); font-weight: 600; }
+  .email-subject { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+  .email-body {
+    font-size: 13px; color: var(--ink-soft); line-height: 1.5;
+  }
+  .email-body p + p { margin-top: 8px; }
+
+  .crm-pane { padding: 24px; }
+  .crm-pane-label {
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 16px; font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .auto-tag {
+    background: var(--accent-soft); color: var(--accent-deep);
+    font-size: 11px; padding: 3px 8px; border-radius: 4px;
+    text-transform: none; letter-spacing: 0;
+  }
+  .crm-record {
+    border: 1px solid var(--line); border-radius: 8px; padding: 16px;
+    background: white;
+  }
+  .crm-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .crm-deal { font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+  .crm-deal strong { color: var(--accent-deep); font-weight: 600; }
+  .crm-activity {
+    border-top: 1px solid var(--line); padding-top: 12px;
+    font-size: 13px;
+  }
+  .crm-activity-row {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    color: var(--ink-soft);
+  }
+  .crm-activity-row.new {
+    color: var(--ink); font-weight: 500;
+  }
+  .crm-activity-row.new::before {
+    content: '●'; color: var(--accent); margin-right: 6px;
+  }
+
+  .annotation {
+    position: absolute;
+    background: var(--ink); color: white;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 4px 12px rgba(10,10,10,0.15);
+    white-space: nowrap;
+  }
+  .annotation::after {
+    content: ''; position: absolute;
+    width: 1px; background: var(--ink-faint);
+  }
+  .ann-1 {
+    top: 50px; right: -20px;
+  }
+  .ann-2 {
+    bottom: 60px; left: -50px;
+  }
+
+  /* ─── Section spacing ─────────────── */
+  section { padding: 96px 0; }
+  .section-eyebrow {
+    font-size: 13px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--accent-deep); text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 44px; line-height: 1.1; letter-spacing: -0.025em;
+    font-weight: 700; max-width: 18ch;
+    margin-bottom: 20px;
+  }
+  .section-lede {
+    font-size: 19px; color: var(--ink-soft); max-width: 56ch;
+    margin-bottom: 56px;
+  }
+
+  /* Problem stripe */
+  .problem-stripe {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 64px 0;
+    text-align: center;
+  }
+  .problem-stripe p {
+    font-style: italic; font-size: 28px; line-height: 1.4;
+    max-width: 32ch; margin: 0 auto;
+    color: var(--ink-soft);
+  }
+  .problem-stripe p strong { color: var(--ink); font-style: normal; font-weight: 600; }
+
+  /* How it works */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    counter-reset: step;
+  }
+  .step { counter-increment: step; }
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; color: var(--ink-faint); margin-bottom: 16px;
+  }
+  .step-num::before { content: '0' counter(step); }
+  .step h3 {
+    font-size: 22px; font-weight: 600; letter-spacing: -0.015em;
+    margin-bottom: 12px;
+  }
+  .step p { color: var(--ink-soft); font-size: 16px; }
+
+  /* Feature grid (AI capabilities) */
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--line); border: 1px solid var(--line);
+    border-radius: 16px; overflow: hidden;
+  }
+  .feature {
+    background: white; padding: 32px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .feature-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent-deep);
+    display: grid; place-items: center;
+  }
+  .feature h3 {
+    font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .feature p {
+    font-size: 15px; color: var(--ink-soft); line-height: 1.55;
+    margin: 0;
+  }
+  .feature .demo-line {
+    margin-top: auto; padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    color: var(--ink-faint); line-height: 1.4;
+  }
+  .feature .demo-line strong { color: var(--accent-deep); font-weight: 500; }
+
+  /* Privacy two-col */
+  .privacy {
+    background: var(--bg-alt);
+    border-radius: 20px;
+    padding: 56px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 56px;
+  }
+  .privacy h3 {
+    font-size: 17px; font-weight: 600; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .privacy h3 .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    background: var(--ink); color: white; letter-spacing: 0.05em;
+  }
+  .privacy h3.no .badge { background: #B91C1C; }
+  .privacy ul { list-style: none; }
+  .privacy li {
+    padding: 10px 0; border-top: 1px solid var(--line);
+    font-size: 15px; color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+  }
+  .privacy li .mono { font-size: 13px; color: var(--ink-faint); }
+  .privacy-footnote {
+    grid-column: 1 / -1;
+    margin-top: 16px; padding-top: 24px; border-top: 1px solid var(--line);
+    font-size: 14px; color: var(--ink-faint);
+    display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+  }
+  .lock-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border: 1px solid var(--line-strong); border-radius: 6px;
+    background: white; font-size: 13px; color: var(--ink); font-weight: 500;
+  }
+
+  /* Social proof */
+  .quotes {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
+  }
+  .quote {
+    border: 1px solid var(--line); border-radius: 14px;
+    padding: 32px; background: white;
+  }
+  .quote p {
+    font-size: 17px; line-height: 1.5; color: var(--ink);
+    margin-bottom: 24px;
+  }
+  .quote-attr {
+    display: flex; align-items: center; gap: 12px;
+    border-top: 1px solid var(--line); padding-top: 16px;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--line-strong), var(--ink-faint));
+  }
+  .quote-attr-text { font-size: 14px; }
+  .quote-attr-text strong { display: block; font-weight: 600; }
+  .quote-attr-text span { color: var(--ink-faint); }
+
+  /* Pricing */
+  .pricing {
+    max-width: 480px; margin: 0 auto;
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 40px; background: white; text-align: center;
+    box-shadow: 0 4px 12px rgba(10,10,10,0.04);
+  }
+  .price-tag {
+    display: inline-block; background: var(--accent-soft); color: var(--accent-deep);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 6px;
+    margin-bottom: 24px;
+  }
+  .price-amount {
+    font-size: 64px; font-weight: 700; letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .price-amount sup {
+    font-size: 28px; vertical-align: super; font-weight: 500; color: var(--ink-soft);
+  }
+  .price-period { color: var(--ink-soft); font-size: 16px; margin-bottom: 32px; }
+  .price-features {
+    list-style: none; text-align: left;
+    border-top: 1px solid var(--line); padding-top: 24px;
+    margin-bottom: 32px;
+  }
+  .price-features li {
+    padding: 8px 0; font-size: 15px; color: var(--ink-soft);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .price-features li::before {
+    content: '✓'; color: var(--accent); font-weight: 600; flex-shrink: 0;
+  }
+  .pricing .btn-primary { width: 100%; justify-content: center; }
+  .pricing-honest {
+    margin-top: 24px; font-size: 14px; color: var(--ink-faint);
+  }
+
+  /* FAQ */
+  .faq { max-width: 760px; margin: 0 auto; }
+  .faq details {
+    border-top: 1px solid var(--line);
+    padding: 24px 0;
+  }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    font-size: 18px; font-weight: 600; letter-spacing: -0.01em;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: '+'; font-weight: 400; font-size: 24px; color: var(--ink-faint);
+    transition: transform 0.2s;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details > p {
+    margin-top: 12px; color: var(--ink-soft); font-size: 16px; line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 0;
+    color: var(--ink-faint);
+    font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  footer a { color: var(--ink-soft); text-decoration: none; margin-left: 24px; }
+  footer a:hover { color: var(--ink); }
+
+  /* Placeholder marker (for swap-out items) */
+  .placeholder-marker {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(220, 38, 38, 0.9); color: white;
+    font-size: 10px; padding: 2px 6px; border-radius: 3px;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  /* Mobile */
+  @media (max-width: 760px) {
+    .wrap { padding: 0 20px; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    h1 { font-size: 44px; }
+    h2 { font-size: 32px; }
+    .lede { font-size: 18px; }
+    section { padding: 64px 0; }
+    .product-card-body { grid-template-columns: 1fr; }
+    .source-pane { border-right: none; border-bottom: 1px solid var(--line); }
+    .annotation { display: none; }
+    .steps, .quotes, .feature-grid { grid-template-columns: 1fr; }
+    .privacy { grid-template-columns: 1fr; padding: 32px; }
+    footer { flex-direction: column; gap: 16px; text-align: center; }
+    footer a { margin: 0 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">
+      <span class="logo-mark"></span>
+      Ghostlog
+    </div>
+    <nav class="nav-links">
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#install" class="nav-cta">Install for Mac</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="eyebrow">For founder-led sales</div>
+    <h1>Your CRM should write itself.</h1>
+    <p class="lede">
+      Ghostlog watches your work and quietly fills in the right contact, the right deal,
+      the right activity. No buttons. No reminders. No empty fields.
+    </p>
+    <div class="cta-row">
+      <a href="#install" class="btn-primary">
+        Install for Mac
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 7h12M9 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#demo" class="btn-secondary">
+        Watch the 60-second demo
+        <span class="chev">→</span>
+      </a>
+    </div>
+
+    <div class="hero-visual">
+      <div class="product-card">
+        <div class="product-card-header">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        </div>
+        <div class="product-card-body">
+          <div class="source-pane">
+            <div class="source-pane-label">Gmail · Active tab</div>
+            <div class="email-mock">
+              <div class="email-meta"><strong>Jane Chen</strong> &lt;jane@acme.com&gt;</div>
+              <div class="email-meta">to me · 11:42 AM</div>
+              <div class="email-subject">Re: Pricing for Q3 rollout</div>
+              <div class="email-body">
+                <p>Mike — thanks for the call. Quick question on the SSO add-on...</p>
+                <p>If we close by end of quarter, can we get the founder pricing locked in for year two?</p>
+              </div>
+            </div>
+          </div>
+          <div class="crm-pane">
+            <div class="crm-pane-label">
+              <span>LeadSpot · Contact record</span>
+              <span class="auto-tag">Auto-logged</span>
+            </div>
+            <div class="crm-record">
+              <div class="crm-name">Jane Chen — Acme Corp</div>
+              <div class="crm-deal">Deal: <strong>$40,000</strong> · Stage: Negotiation</div>
+              <div class="crm-activity">
+                <div class="crm-activity-row new">Email reply received · 11:42 AM</div>
+                <div class="crm-activity-row">Discovery call (Zoom) · Mar 12</div>
+                <div class="crm-activity-row">LinkedIn DM exchange · Mar 8</div>
+                <div class="crm-activity-row">Initial outreach · Feb 28</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="annotation ann-1">Detected from Gmail tab</div>
+      <div class="annotation ann-2">Matched to deal · $40k</div>
+    </div>
+  </div>
+</section>
+
+<div class="problem-stripe">
+  <div class="wrap">
+    <p>You forgot to follow up. <strong>You lost the deal.</strong> You hate your CRM.</p>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="section-eyebrow">How it works</div>
+    <h2>Three steps. Then never think about it again.</h2>
+    <p class="section-lede">
+      Ghostlog is a desktop daemon. It runs quietly in the background, watches the apps you
+      already use, and sends a redacted summary to your CRM only when there's something worth logging.
+    </p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Install</h3>
+        <p>Download the Mac app. Sign in to LeadSpot. Grant screen-recording permission. Done — about 4 minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Work as you normally would</h3>
+        <p>Reply to emails. Hop on calls. Send LinkedIn DMs. Ghostlog matches the people you talk to against your CRM.</p>
+      </div>
+      <div class="step">
+        <div class="step-num"></div>
+        <h3>Open your CRM and find it already done</h3>
+        <p>Activity logged. Deals updated. A morning digest tells you which leads have gone quiet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="ai-features" style="background: var(--bg-alt);">
+  <div class="wrap">
+    <div class="section-eyebrow">Beyond auto-logging</div>
+    <h2>An AI-first CRM, not a database with a chat panel bolted on.</h2>
+    <p class="section-lede">
+      Auto-logged activity is the loud feature. The quieter ones are why your CRM
+      stops feeling like work and starts feeling like a teammate.
+    </p>
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 14V6m4 8V3m4 11v-6m4 6V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Lead scoring from real signals</h3>
+        <p>Not "this person is at a 50-person company so they're a 7." Real signals from your activity: response cadence, deal velocity, opens, mentions.</p>
+        <div class="demo-line">jane@acme.com → score: <strong>8.4</strong> · trending up</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 4h12M3 9h8M3 14h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>AI-drafted follow-ups</h3>
+        <p>Reads the past conversation, drafts the next message in your voice. You skim and send — you don't write from scratch.</p>
+        <div class="demo-line">draft ready · <strong>Send to Marcus</strong> →</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.8"/><path d="m12 12 3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Natural-language queries</h3>
+        <p>Ask in plain English. "Which leads opened my email twice but haven't replied?" Get the records, not a chart.</p>
+        <div class="demo-line">→ <strong>4 leads</strong> match · ranked by recency</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2v8m0 4v.5m-7-2.5a7 7 0 1 1 14 0 7 7 0 0 1-14 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Stall detection</h3>
+        <p>Pattern-matches against your past wins and losses. Tells you which deals are about to slip — before they do.</p>
+        <div class="demo-line"><strong>2 deals</strong> at risk · review by Friday</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-6 14c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Auto-enrichment</h3>
+        <p>New contact lands? AI looks up the company, role, LinkedIn, and recent press. Zero forms to fill.</p>
+        <div class="demo-line">enriched <strong>jane@acme.com</strong> · VP of Sales</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 6h12M3 9h12M3 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>3-line activity summaries</h3>
+        <p>Every contact has a rolling AI summary of the relationship. Open the record, know where things stand in 4 seconds.</p>
+        <div class="demo-line">"Met at Saastr · asked about pricing twice · Q3 deadline."</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <div class="section-eyebrow">Privacy is the architecture</div>
+    <h2>Your screen never leaves your machine.</h2>
+    <p class="section-lede">
+      Screen capture is processed locally. Only redacted, allowlist-passing observations are sent to the cloud — and you can audit every byte.
+    </p>
+    <div class="privacy">
+      <div>
+        <h3 class="yes"><span class="badge">SEES</span></h3>
+        <ul>
+          <li>Gmail <span class="mono">mail.google.com</span></li>
+          <li>LinkedIn <span class="mono">linkedin.com</span></li>
+          <li>Slack <span class="mono">app.slack.com</span></li>
+          <li>Calendly <span class="mono">calendly.com</span></li>
+          <li>Zoom <span class="mono">zoom.us</span></li>
+          <li>Apps you explicitly opt in</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="no"><span class="badge">DOES NOT SEE</span></h3>
+        <ul>
+          <li>1Password <span class="mono">muted always</span></li>
+          <li>Banking <span class="mono">muted always</span></li>
+          <li>Health portals <span class="mono">muted always</span></li>
+          <li>Anything you mute</li>
+          <li>Anything in incognito</li>
+          <li>Your screenshots (never uploaded)</li>
+        </ul>
+      </div>
+      <div class="privacy-footnote">
+        <span class="lock-badge">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="3" y="6" width="8" height="6" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M5 6V4a2 2 0 1 1 4 0v2" stroke="currentColor" stroke-width="1.5"/></svg>
+          Local-first · Encrypted at rest · macOS Keychain
+        </span>
+        <span>Audit every promoted observation in the local log. Default-deny on everything else.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-eyebrow">Quietly used by</div>
+    <h2>Founders who'd rather close than log.</h2>
+    <div class="quotes">
+      <div class="quote" style="position:relative;">
+        <span class="placeholder-marker">PLACEHOLDER</span>
+        <p>"I stopped opening the CRM tab. It just fills itself in. I check the morning digest and reply to whoever's gone quiet."</p>
+        <div class="quote-attr">
+          <div class="avatar"></div>
+          <div class="quote-attr-text"><strong>Founder name</strong><span>$30k MRR · B2B SaaS</span></div>
+        </div>
+      </div>
+      <div class="quote" style="position:relative;">
+        <span class="placeholder-marker">PLACEHOLDER</span>
+        <p>"The privacy story sold me. I'd never trust this from anyone else. The fact that screenshots stay local is the whole game."</p>
+        <div class="quote-attr">
+          <div class="avatar"></div>
+          <div class="quote-attr-text"><strong>Founder name</strong><span>Solo · Dev tools</span></div>
+        </div>
+      </div>
+      <div class="quote" style="position:relative;">
+        <span class="placeholder-marker">PLACEHOLDER</span>
+        <p>"I closed two deals last month I would've forgotten about. The 'leads gone quiet' digest is the killer feature, not the auto-logging."</p>
+        <div class="quote-attr">
+          <div class="avatar"></div>
+          <div class="quote-attr-text"><strong>Founder name</strong><span>$60k MRR · Agency</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pricing" style="background: var(--bg-alt);">
+  <div class="wrap">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <div class="section-eyebrow" style="margin-bottom: 12px;">Pricing</div>
+      <h2 style="margin: 0 auto;">One price. Everything included.</h2>
+    </div>
+    <div class="pricing">
+      <span class="price-tag">Solo plan</span>
+      <div class="price-amount"><sup>$</sup>39</div>
+      <div class="price-period">per month · cancel anytime</div>
+      <ul class="price-features">
+        <li>Unlimited auto-logged activities</li>
+        <li>Daily "leads gone quiet" digest</li>
+        <li>LeadSpot CRM included</li>
+        <li>Local-first, encrypted screen capture</li>
+        <li>Mac app + iCloud sync (Windows soon)</li>
+        <li>Email support from the founder</li>
+      </ul>
+      <a href="#install" class="btn-primary">Install for Mac</a>
+      <div class="pricing-honest">No tiers. No "Enterprise — call us." No feature flags.</div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <div class="section-eyebrow" style="margin-bottom: 12px;">FAQ</div>
+      <h2 style="margin: 0 auto;">Honest answers.</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>Does Ghostlog watch literally everything on my screen?</summary>
+        <p>No. It watches the apps and domains on your allowlist (Gmail, LinkedIn, Slack, Calendly, Zoom by default). Banking, password managers, and health portals are muted permanently and can't be enabled. You can mute any app at any time.</p>
+      </details>
+      <details>
+        <summary>Where do screenshots and OCR text go?</summary>
+        <p>To your local machine, encrypted with a key in your macOS Keychain. They never leave. The cloud only ever receives a redacted summary (e.g. "exchanged email with jane@acme.com at 11:42") — never the actual content.</p>
+      </details>
+      <details>
+        <summary>Can I see what was sent to the cloud?</summary>
+        <p>Yes. The local audit log shows every observation Ghostlog promoted to the cloud, with the original local source. You can grep it, export it, or delete entries.</p>
+      </details>
+      <details>
+        <summary>Does this work without LeadSpot?</summary>
+        <p>Right now, no — Ghostlog ships with LeadSpot included. We may add HubSpot, Attio, and Folk in the future depending on what design partners ask for.</p>
+      </details>
+      <details>
+        <summary>Will it sync between my Mac and my phone?</summary>
+        <p>Activity data syncs to LeadSpot's web app, so you can read it from any device. The capture daemon runs only on Mac for now (Windows is on the roadmap).</p>
+      </details>
+      <details>
+        <summary>What does the AI actually do beyond auto-logging activity?</summary>
+        <p>A lot — and it's why the CRM doesn't feel like a database. The AI scores leads from real signals (response cadence, deal velocity, opens) instead of demographics. It drafts follow-up emails grounded in your past conversations. It detects deals about to stall before they actually stall. It answers natural-language questions ("which leads opened my email twice but haven't replied?") with actual records, not charts. It auto-enriches new contacts from email signature, company, role, and LinkedIn. Every contact has a rolling 3-line AI summary so you know where things stand without re-reading 40 emails.</p>
+      </details>
+      <details>
+        <summary>How does this compare to HubSpot, Pipedrive, or Gong?</summary>
+        <p>HubSpot and Pipedrive are databases you have to fill in. Ghostlog is a CRM that fills itself in and tells you what to do next. Gong watches calls only and is priced for sales teams of 50+ ($1.6k/seat/yr plus a five-figure platform fee). Ghostlog watches the entire desktop, costs $39/mo, and is built for the founder doing the selling. If you have a sales team, an admin, and a CRM ops person, use Salesforce + Gong. If you're the founder doing this between every other thing on your plate, Ghostlog is built for you.</p>
+      </details>
+      <details>
+        <summary>Can I import contacts from my existing CRM?</summary>
+        <p>Yes. CSV import works out of the box. We have direct importers for HubSpot, Pipedrive, Attio, and Folk that pull contacts, companies, deals, and historical activity. Most users finish migration in under 10 minutes. The AI auto-enriches everything on import so you're not staring at a wall of empty fields on day one.</p>
+      </details>
+      <details>
+        <summary>What if I cancel?</summary>
+        <p>Your CRM data is yours. You can export everything as CSV. The daemon stops running. We delete your account and the per-user encryption key — promoted observations become unrecoverable from our side within 30 days.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; justify-content:space-between; width:100%;">
+    <div>© 2026 Ghostlog · Built quietly</div>
+    <div>
+      <a href="#privacy">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="mailto:hi@ghostlog.app">Contact</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
