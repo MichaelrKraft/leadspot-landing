@@ -1,0 +1,36 @@
+# Render Static Site config for the LeadSpot.AI marketing pages.
+# When imported via Render dashboard, this file is auto-detected and the
+# service is configured exactly as specified below — no manual setup.
+#
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: leadspot-landing
+    runtime: static
+    # No build step — these are hand-written static HTML files.
+    buildCommand: ""
+    # Serve from the repo root so all variants are reachable under /variant-X/
+    # and the root index.html (this commit) redirects to variant-e by default.
+    staticPublishPath: ./
+    # Free PR previews so we can ship copy/visual changes via PRs and click
+    # to verify before merge.
+    pullRequestPreviewsEnabled: true
+    # Sensible cache + security headers.
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*.html
+        name: Cache-Control
+        value: public, max-age=300, must-revalidate
+    # No custom routes — let Render's static handler serve the directory tree
+    # as-is. /variant-e-command-ai/ resolves to its index.html naturally.
